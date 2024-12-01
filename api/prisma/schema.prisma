@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  name      String
+  documents Document[]
+  createdAt DateTime   @default(now())
+}
+
+model Document {
+  id          String           @id @default(uuid())
+  title       String?
+  content     String
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String           // need userId to map the foreign key relationship
+  categories  Category[]
+  sentences   Sentence[]
+  createdAt   DateTime         @default(now())
+}
+
+model Sentence {
+  id          String           @id @default(uuid())
+  sequence    String
+  index       Int              //Position in the document
+  documentId  String  
+  document    Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  highlights  Highlight[]      // each sentence can have multiple highlights
+
+  @@unique([documentId, sequence]) // Ensure each sentence is unique in the document
+}
+
+model Category {
+  id          String           @id @default(uuid())
+  name        String
+  color       String? 
+  documentId  String
+  document    Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  highlights  Highlight[]
+
+  @@unique([documentId, name])
+}
+
+model Highlight {
+  id          String           @id @default(uuid())
+  sentenceId  String           // each highlight belongs to a sentence
+  sentence    Sentence         @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  categoryId  String           // each highlight belongs to a category
+  category    Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}

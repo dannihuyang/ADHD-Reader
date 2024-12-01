@@ -1,0 +1,113 @@
+/* Modern container */
+.container {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 1rem;
+}
+
+/* Card styles */
+.card {
+	background: var(--surface);
+	border-radius: 12px;
+	border: 1px solid var(--border);
+	transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Modern form styles */
+.form-control {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+
+.form-control label {
+	font-weight: 500;
+	color: var(--text-secondary);
+}
+
+.form-control input,
+.form-control textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface);
+	color: var(--text);
+}
+
+/* Button styles */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	font-weight: 500;
+	transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+	background: var(--primary);
+	color: white;
+}
+
+.btn-primary:hover {
+	background: var(--primary-dark);
+}
+
+.btn-ghost {
+	background: transparent;
+	color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+	background: var(--background);
+}
+
+/* Modal styles */
+.modal-backdrop {
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(4px);
+}
+
+.modal-content {
+	background: var(--surface);
+	border-radius: 16px;
+	box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+		0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Grid layout */
+.grid-layout {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 1.5rem;
+}
+
+/* Utility classes */
+.flex-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.text-truncate {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.line-clamp-2 {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}

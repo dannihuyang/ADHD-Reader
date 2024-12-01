@@ -1,0 +1,31 @@
+{
+	"name": "api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "server.js",
+	"scripts": {
+		"start": "node src/server.js",
+		"dev": "nodemon src/server.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@prisma/client": "^5.22.0",
+		"bcrypt": "^5.1.1",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
+		"dotenv": "^16.4.5",
+		"express": "^4.21.1",
+		"jsonwebtoken": "^9.0.2",
+		"openai": "4.73.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.9.1",
+		"nodemon": "^3.1.7",
+		"prisma": "^6.0.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.6.3"
+	}
+}

@@ -1,0 +1,161 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		font-family: "Inter", sans-serif;
+	}
+
+	body {
+		@apply bg-gray-50;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+}
+
+@layer components {
+	.btn {
+		@apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+	}
+
+	.btn-primary {
+		@apply bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 font-semibold rounded-lg transition-colors duration-300;
+	}
+
+	.btn-ghost {
+		@apply text-gray-600 hover:bg-gray-100 focus:ring-gray-500;
+	}
+
+	.btn-gray {
+		@apply px-6 py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-300;
+	}
+
+	.card {
+		@apply bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200;
+	}
+
+	.form-control {
+		@apply space-y-2;
+	}
+
+	.form-control input,
+	.form-control textarea {
+		@apply w-full rounded-lg border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500;
+	}
+
+	.modal-backdrop {
+		@apply fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity;
+	}
+
+	.modal-content {
+		@apply bg-white rounded-xl shadow-xl transition-all;
+	}
+
+	.flex-center {
+		@apply flex items-center justify-center;
+	}
+
+	.grid-layout {
+		@apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+	}
+
+	.text-truncate {
+		@apply truncate;
+	}
+
+	.text-accent {
+		@apply text-blue-500;
+	}
+
+	.bg-gradient-main {
+		@apply bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500;
+	}
+
+	.focus-ring {
+		@apply focus:ring-blue-400;
+	}
+
+	.btn-gradient {
+		background: linear-gradient(to right, #3b82f6, #3b82f6);
+		transition: all 0.2s ease;
+	}
+	
+	.btn-gradient:hover {
+		background: linear-gradient(to right, #2563eb, #3073eb);
+		transform: translateY(-1px);
+	}
+	
+	.btn-gradient:active {
+		transform: translateY(1px);
+	}
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	@apply w-2;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-gray-400;
+}
+
+/* Modal animation */
+@keyframes modalFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-in {
+	animation: modalFadeIn 0.3s ease-out;
+}
+
+@layer utilities {
+	.animate-gradient {
+		background-size: 200% 200%;
+		animation: gradientFlow 15s ease infinite;
+	}
+
+	.animate-fadeIn {
+		animation: fadeIn 0.6s ease-out forwards;
+	}
+}
+
+@keyframes gradientFlow {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
