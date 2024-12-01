@@ -11,6 +11,7 @@ export default function ReaderPage({ setCurrentPage }) {
 	const [editingCategory, setEditingCategory] = useState(null);
 	const [highlights, setHighlights] = useState([]);
 	const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
+	const [processingCategory, setProcessingCategory] = useState(null);
 
 	useEffect(() => {
 		const documentId = localStorage.getItem("currentDocumentId");
@@ -113,42 +114,25 @@ export default function ReaderPage({ setCurrentPage }) {
 		}
 	};
 
-	const handleCategoryClick = async (categoryId) => {
-		setIsLoadingHighlights(true);
-		setSelectedCategory(categoryId);
+	const handleCategoryClick = async (category) => {
+		console.log("Category clicked:", category);
+		setSelectedCategory(category.id);
+		setProcessingCategory(category.id);
 
 		try {
-			// Add console.log for debugging
-			console.log("Generating highlights for category:", categoryId);
-
-			// First, remove any existing highlights
-			removeAllHighlights();
-
 			const response = await fetch(
-					`http://localhost:3001/api/highlights/generate/${categoryId}`,
-					{
-						method: 'POST',
-						credentials: 'include'
-					}
-				);
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				console.error("API Error:", errorData);
-				throw new Error('Failed to generate highlights');
-			}
-			
+				`http://localhost:3001/api/highlights/generate/${category.id}`,
+				{
+					method: 'POST',
+					credentials: 'include'
+				}
+			);
 			const data = await response.json();
-			console.log("Received highlights:", data); // Debug log
-
-			setHighlights(data.highlights);
-			
-			// Apply the new highlights
-			applyHighlights(data.highlights, data.category.color);
+			console.log("Highlights generated:", data);
 		} catch (error) {
-			console.error('Error generating highlights:', error);
+			console.error("Error generating highlights:", error);
 		} finally {
-			setIsLoadingHighlights(false);
+			setProcessingCategory(null);
 		}
 	};
 
@@ -264,27 +248,26 @@ export default function ReaderPage({ setCurrentPage }) {
 					</div>
 					
 					<div className="space-y-3">
-						{categories.map((category, index) => (
+						{categories.map((category) => (
 							<div
 								key={category.id}
-								className="relative group"
-								onClick={() => {
-									console.log("Outer div clicked"); // Debug log
-								}}
+								className="relative"
 							>
-								<button
-									onClick={() => {
-										console.log("Category clicked:", category.id); // Debug log
-										
-										handleCategoryClick(category.id);
-									}}
-									className={`w-full p-4 rounded-lg border-2 transition-all
-										hover:shadow-md
-												focus:outline-none focus:ring-2 focus:ring-offset-2
-												${selectedCategory === category.id ? 'ring-2 ring-offset-2' : ''}
-												${isLoadingHighlights && selectedCategory === category.id ? 'opacity-50' : ''}
+								{processingCategory === category.id && (
+									<div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-lg">
+										<div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm">
+											<div className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-transparent rounded-full" />
+											<span className="text-sm text-gray-500">Processing...</span>
+										</div>
+									</div>
+								)}
+
+								<div
+									onClick={() => handleCategoryClick(category)}
+									className={`relative w-full p-4 rounded-lg border-2 transition-all
+										hover:shadow-md cursor-pointer
+										${selectedCategory === category.id ? 'ring-2 ring-offset-2' : ''}
 									`}
-									disabled={isLoadingHighlights}
 									style={{
 										backgroundColor: `${category.color}15`,
 										borderColor: category.color,
@@ -296,57 +279,10 @@ export default function ReaderPage({ setCurrentPage }) {
 											className="w-4 h-4 rounded-full"
 											style={{ backgroundColor: category.color }}
 										/>
-										{editingCategory === category.id ? (
-											<input
-												autoFocus
-												className="text-sm font-medium text-gray-900 bg-transparent border-none focus:ring-0 w-full"
-												value={category.name}
-												onClick={(e) => e.stopPropagation()}
-												onChange={(e) => {
-													const newCategories = [...categories];
-													newCategories[index] = { ...category, name: e.target.value };
-													setCategories(newCategories);
-												}}
-												onBlur={() => {
-													handleCategoryNameUpdate(category.id, category.name);
-													setEditingCategory(null);
-												}}
-												onKeyDown={(e) => {
-													if (e.key === 'Enter') {
-														handleCategoryNameUpdate(category.id, category.name);
-														setEditingCategory(null);
-													}
-												}}
-											/>
-										) : (
-											<span 
-												className="text-sm font-medium text-gray-900 w-full"
-												onDoubleClick={(e) => {
-													e.stopPropagation();
-													setEditingCategory(category.id);
-												}}
-											>
-												{category.name || `Category ${index + 1}`}
-											</span>
-										)}
+										<span className="text-sm font-medium text-gray-900">
+											{category.name || "Untitled Category"}
+										</span>
 									</div>
-								</button>
-
-								<div className="absolute right-0 top-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center pr-2">
-									{Object.entries(CATEGORY_COLORS).map(([key, color]) => (
-										<button
-											key={key}
-											onClick={(e) => {
-												e.stopPropagation();
-												updateCategory(category.id, color);
-											}}
-											className="w-6 h-6 mx-1 border-2 border-white hover:scale-110 transition-transform shadow-sm"
-											style={{ 
-												backgroundColor: color,
-												borderRadius: '4px'  // Square with slightly rounded corners
-											}}
-										/>
-									))}
 								</div>
 							</div>
 						))}

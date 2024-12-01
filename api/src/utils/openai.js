@@ -17,29 +17,35 @@ const generateTitle = async (content) => {
 			messages: [
 				{
 					role: "system",
-					content:
-						"You are a helpful assistant that generates concise and descriptive titles for provided content.",
+					content: 
+						"You are a helpful assistant that generates concise titles. Rules:\n" +
+						"- Title must be complete and meaningful\n" +
+						"- Maximum 4 words\n" +
+						"- No quotes or punctuation\n" +
+						"- Must be descriptive of the content"
 				},
 				{
 					role: "user",
-					content: `Generate a concise and descriptive title for the following content:\n\n${content} under four words`,
-				},
+					content: `Generate a clear, complete title for this content:\n\n${content}`
+				}
 			],
-			max_tokens: 4,
+			max_tokens: 20,  // Increased to allow for complete titles
+			temperature: 0.7, // Added for more creative but still focused titles
+			presence_penalty: 0.6 // Encourages more diverse word choice
 		});
-		// console.log("Response:", JSON.stringify(response, null, 2));
-		// Correctly access the generated title from the nested structure
-		let aiGeneratedTitle =
-			response.choices?.[0]?.message?.content?.trim() || "Untitled Document";
 
-		// Remove surrounding quotes, if any
-		if (aiGeneratedTitle.startsWith('"')) {
-			aiGeneratedTitle = aiGeneratedTitle.slice(1);
-		}
+		let aiGeneratedTitle = response.choices?.[0]?.message?.content?.trim() || "Untitled Document";
+
+		// Clean up the title
+		aiGeneratedTitle = aiGeneratedTitle
+			.replace(/["']/g, '') // Remove quotes
+			.replace(/\.+$/, '') // Remove trailing periods
+			.trim();
+
 		return aiGeneratedTitle;
 	} catch (error) {
 		console.error("Error generating AI title:", error.message);
-		return `error: ${error.message}`;
+		return "Untitled Document";
 	}
 };
 
@@ -52,9 +58,9 @@ const generateCategories = async (content) => {
                     role: "system",
                     content: 
                         "You are an expert content analyzer. For the given content, generate EXACTLY THREE distinct categories that capture different aspects:\n" +
-                        "1. Main Theme/Topic\n" +
-                        "2. Technical/Historical Details\n" +
-                        "3. Impact/Applications\n\n" +
+                        "Main Theme/Topic\n" +
+                        "Technical/Historical Details\n" +
+                        "Impact/Applications\n\n" +
                         "Rules:\n" +
                         "- Each category should be 2-3 words\n" +
                         "- Make categories specific to the content\n" +
