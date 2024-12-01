@@ -6,7 +6,6 @@ const documentsRoutes = require("./routes/documents");
 const authRoutes = require("./routes/auth");
 const highlightsRoutes = require("./routes/highlights");
 const categoriesRoutes = require("./routes/categories");
-const sentencesRoutes = require("./routes/sentences");
 const app = express();
 
 // Middleware
@@ -22,9 +21,8 @@ app.use(cookieParser()); // parses cookies in the request headers
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/documents", documentsRoutes);
-app.use("/api/highlights", highlightsRoutes);
 app.use("/api/categories", categoriesRoutes);
-app.use("/api/sentences", sentencesRoutes);
+app.use("/api/highlights", highlightsRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3001;

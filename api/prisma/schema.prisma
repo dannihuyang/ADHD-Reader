@@ -29,19 +29,7 @@ model Document {
   user        User             @relation(fields: [userId], references: [id])
   userId      String           // need userId to map the foreign key relationship
   categories  Category[]
-  sentences   Sentence[]
   createdAt   DateTime         @default(now())
-}
-
-model Sentence {
-  id          String           @id @default(uuid())
-  sequence    String
-  index       Int              //Position in the document
-  documentId  String  
-  document    Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  highlights  Highlight[]      // each sentence can have multiple highlights
-
-  @@unique([documentId, sequence]) // Ensure each sentence is unique in the document
 }
 
 model Category {
@@ -56,9 +44,12 @@ model Category {
 }
 
 model Highlight {
-  id          String           @id @default(uuid())
-  sentenceId  String           // each highlight belongs to a sentence
-  sentence    Sentence         @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  categoryId  String           // each highlight belongs to a category
-  category    Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    id          String   @id @default(cuid())
+    startIndex  Int
+    endIndex    Int
+    text        String
+    categoryId  String
+    category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }

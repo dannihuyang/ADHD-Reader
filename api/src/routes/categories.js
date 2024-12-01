@@ -4,6 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const requireAuth = require("../middleware/auth");
 const { CATEGORY_COLORS } = require("../config/constants");
+
 // Get all categories for a document, assuming the documentId is in the request params
 router.get("/:documentId", requireAuth, async (req, res) => {
 	const { documentId } = req.params; // access the documentId from the request params

@@ -92,8 +92,100 @@ const generateCategories = async (content) => {
     }
 };
 
+const generateHighlights = async (content, categories) => {
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: 
+                        "You are an expert content analyzer. Analyze the given text and identify relevant segments for the specified category.\n\n" +
+                        "Rules:\n" +
+                        "- Find 2-3 relevant text segments\n" +
+                        "- Each segment must be an exact match from the content\n" +
+                        "- Include the starting and ending character positions\n" +
+                        "- Segments should not overlap\n\n" +
+                        "Return a JSON object with this exact structure:\n" +
+                        '{\n' +
+                        '  "categoryHighlights": {\n' +
+                        '    "category-id": [\n' +
+                        '      {\n' +
+                        '        "text": "exact text from content",\n' +
+                        '        "startIndex": number,\n' +
+                        '        "endIndex": number\n' +
+                        '      }\n' +
+                        '    ]\n' +
+                        '  }\n' +
+                        '}'
+                },
+                {
+                    role: "user",
+                    content: `Content to analyze: "${content}"\n\nCategory to find highlights for: ${categories[0].name} (ID: ${categories[0].id})`
+                }
+            ],
+            temperature: 0.3,
+        });
+
+        let result;
+        try {
+            result = JSON.parse(response.choices[0].message.content);
+        } catch (parseError) {
+            console.error("Failed to parse OpenAI response:", response.choices[0].message.content);
+            throw new Error("Invalid JSON response from OpenAI");
+        }
+
+        // Validate basic structure
+        if (!result?.categoryHighlights) {
+            console.error("Missing categoryHighlights in response:", result);
+            throw new Error("Invalid response structure from OpenAI");
+        }
+
+        // Process and validate each highlight
+        const validatedHighlights = {};
+        
+        Object.entries(result.categoryHighlights).forEach(([categoryId, highlights]) => {
+            validatedHighlights[categoryId] = highlights.filter(highlight => {
+                // Ensure all required fields exist
+                if (!highlight?.text || !highlight?.startIndex || !highlight?.endIndex) {
+                    console.warn("Skipping highlight with missing fields:", highlight);
+                    return false;
+                }
+
+                // Find the actual position of this text in the content
+                const actualStartIndex = content.indexOf(highlight.text);
+                if (actualStartIndex === -1) {
+                    console.warn("Text not found in content:", highlight.text);
+                    return false;
+                }
+
+                // Update indices to actual positions
+                highlight.startIndex = actualStartIndex;
+                highlight.endIndex = actualStartIndex + highlight.text.length;
+
+                return true;
+            });
+        });
+
+        return {
+            categoryHighlights: validatedHighlights
+        };
+
+    } catch (error) {
+        console.error("Error in generateHighlights:", error);
+        // Return empty highlights structure
+        return {
+            categoryHighlights: categories.reduce((acc, cat) => {
+                acc[cat.id] = [];
+                return acc;
+            }, {})
+        };
+    }
+};
+
 // Export OpenAI functions
 module.exports = {
 	generateCategories,
-	generateTitle
+	generateTitle,
+	generateHighlights
 };

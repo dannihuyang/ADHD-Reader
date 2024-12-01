@@ -4,15 +4,13 @@ import { CATEGORY_COLORS } from '../config/constants';
 
 export default function ReaderPage({ setCurrentPage }) {
 	const [document, setDocument] = useState(null);
-	const [categories, setCategories] = useState([
-		{ name: "", color: CATEGORY_COLORS.FIRST, id: 1 },
-		{ name: "", color: CATEGORY_COLORS.SECOND, id: 2 },
-		{ name: "", color: CATEGORY_COLORS.THIRD, id: 3 }
-	]);
+	const [categories, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [selectedCategory, setSelectedCategory] = useState(null);
 	const [editingCategory, setEditingCategory] = useState(null);
+	const [highlights, setHighlights] = useState([]);
+	const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
 
 	useEffect(() => {
 		const documentId = localStorage.getItem("currentDocumentId");
@@ -51,22 +49,10 @@ export default function ReaderPage({ setCurrentPage }) {
 		}
 	};
 
-	const updateCategory = async (categoryId) => {
+	const updateCategory = async (categoryId, newColor) => {
 		try {
 			const currentCategory = categories.find(cat => cat.id === categoryId);
 			if (!currentCategory) return;
-
-			// Find current color in CATEGORY_COLORS
-			const currentColorKey = Object.entries(CATEGORY_COLORS)
-				.find(([_, value]) => value === currentCategory.color)?.[0];
-
-			if (!currentColorKey) return;
-
-			// Get next color in sequence
-			const colorKeys = Object.keys(CATEGORY_COLORS);
-			const currentIndex = colorKeys.indexOf(currentColorKey);
-			const nextColorKey = colorKeys[(currentIndex + 1) % colorKeys.length];
-			const nextColor = CATEGORY_COLORS[nextColorKey];
 
 			const response = await fetch(`http://localhost:3001/api/categories/${categoryId}`, {
 				method: 'PUT',
@@ -76,7 +62,7 @@ export default function ReaderPage({ setCurrentPage }) {
 				credentials: 'include',
 				body: JSON.stringify({
 					name: currentCategory.name || `Category ${currentCategory.id}`,
-					color: nextColor
+					color: newColor
 				})
 			});
 
@@ -91,7 +77,6 @@ export default function ReaderPage({ setCurrentPage }) {
 					cat.id === categoryId ? updatedCategory : cat
 				)
 			);
-			setSelectedCategory(categoryId);
 		} catch (error) {
 			console.error('Error updating category:', error);
 		}
@@ -126,6 +111,117 @@ export default function ReaderPage({ setCurrentPage }) {
 		} catch (error) {
 			console.error('Error updating category name:', error);
 		}
+	};
+
+	const handleCategoryClick = async (categoryId) => {
+		setIsLoadingHighlights(true);
+		setSelectedCategory(categoryId);
+
+		try {
+			// Add console.log for debugging
+			console.log("Generating highlights for category:", categoryId);
+
+			// First, remove any existing highlights
+			removeAllHighlights();
+
+			const response = await fetch(
+					`http://localhost:3001/api/highlights/generate/${categoryId}`,
+					{
+						method: 'POST',
+						credentials: 'include'
+					}
+				);
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error("API Error:", errorData);
+				throw new Error('Failed to generate highlights');
+			}
+			
+			const data = await response.json();
+			console.log("Received highlights:", data); // Debug log
+
+			setHighlights(data.highlights);
+			
+			// Apply the new highlights
+			applyHighlights(data.highlights, data.category.color);
+		} catch (error) {
+			console.error('Error generating highlights:', error);
+		} finally {
+			setIsLoadingHighlights(false);
+		}
+	};
+
+	const removeAllHighlights = () => {
+		const content = document.querySelector('#document-content');
+		console.log("Content element found:", !!content); // Debug log
+		if (!content) return;
+
+		const highlights = content.querySelectorAll('.highlight-span');
+		console.log("Found highlights to remove:", highlights.length); // Debug log
+		highlights.forEach(highlight => {
+			const text = highlight.textContent;
+			highlight.replaceWith(text);
+		});
+	};
+
+	const applyHighlights = (highlights, color) => {
+		const content = document.querySelector('#document-content');
+		console.log("Applying highlights:", highlights.length, "Color:", color); // Debug log
+		if (!content) return;
+
+		// Sort highlights by startIndex in descending order
+		highlights.sort((a, b) => b.startIndex - a.startIndex);
+
+		highlights.forEach(highlight => {
+			try {
+				const range = document.createRange();
+				const startNode = findTextNode(content, highlight.startIndex);
+				const endNode = findTextNode(content, highlight.endIndex);
+				
+				console.log("Found nodes:", !!startNode, !!endNode, highlight.text); // Debug log
+				
+				if (startNode && endNode) {
+					const span = document.createElement('span');
+					span.className = 'highlight-span';
+					span.style.backgroundColor = `${color}40`;
+					span.style.padding = '0 2px';
+					span.style.borderRadius = '2px';
+					
+					range.setStart(startNode.node, startNode.offset);
+					range.setEnd(endNode.node, endNode.offset);
+					range.surroundContents(span);
+				}
+			} catch (error) {
+				console.error("Error applying highlight:", error, highlight);
+			}
+		});
+	};
+
+	// Helper function to find the correct text node and offset
+	const findTextNode = (root, targetIndex) => {
+		let currentIndex = 0;
+		
+		function traverse(node) {
+			if (node.nodeType === Node.TEXT_NODE) {
+				const length = node.textContent.length;
+				if (currentIndex <= targetIndex && targetIndex <= currentIndex + length) {
+					return {
+						node: node,
+						offset: targetIndex - currentIndex
+					};
+				}
+				currentIndex += length;
+			} else {
+				for (const child of node.childNodes) {
+					const result = traverse(child);
+					if (result) return result;
+				}
+			}
+			return null;
+		}
+		
+		return traverse(root);
 	};
 
 	if (loading) return <div className="min-h-screen flex items-center justify-center">
@@ -169,14 +265,26 @@ export default function ReaderPage({ setCurrentPage }) {
 					
 					<div className="space-y-3">
 						{categories.map((category, index) => (
-							<div key={category.id} className="relative">
+							<div
+								key={category.id}
+								className="relative group"
+								onClick={() => {
+									console.log("Outer div clicked"); // Debug log
+								}}
+							>
 								<button
-									onClick={() => updateCategory(category.id)}
+									onClick={() => {
+										console.log("Category clicked:", category.id); // Debug log
+										
+										handleCategoryClick(category.id);
+									}}
 									className={`w-full p-4 rounded-lg border-2 transition-all
-										hover:shadow-md hover:-translate-y-0.5
-										focus:outline-none focus:ring-2 focus:ring-offset-2
-										${selectedCategory === category.id ? 'ring-2 ring-offset-2' : ''}
+										hover:shadow-md
+												focus:outline-none focus:ring-2 focus:ring-offset-2
+												${selectedCategory === category.id ? 'ring-2 ring-offset-2' : ''}
+												${isLoadingHighlights && selectedCategory === category.id ? 'opacity-50' : ''}
 									`}
+									disabled={isLoadingHighlights}
 									style={{
 										backgroundColor: `${category.color}15`,
 										borderColor: category.color,
@@ -223,6 +331,23 @@ export default function ReaderPage({ setCurrentPage }) {
 										)}
 									</div>
 								</button>
+
+								<div className="absolute right-0 top-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center pr-2">
+									{Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+										<button
+											key={key}
+											onClick={(e) => {
+												e.stopPropagation();
+												updateCategory(category.id, color);
+											}}
+											className="w-6 h-6 mx-1 border-2 border-white hover:scale-110 transition-transform shadow-sm"
+											style={{ 
+												backgroundColor: color,
+												borderRadius: '4px'  // Square with slightly rounded corners
+											}}
+										/>
+									))}
+								</div>
 							</div>
 						))}
 					</div>
@@ -230,9 +355,9 @@ export default function ReaderPage({ setCurrentPage }) {
 					<div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
 						<h3 className="text-sm font-medium text-blue-900 mb-2">How to use</h3>
 						<ul className="text-sm text-blue-700 space-y-2">
-							<li>• Select a category to highlight relevant text</li>
-							<li>• Click highlighted text to remove highlighting</li>
-							<li>• Categories are generated based on your document's content</li>
+							<li>• Click on a category to highlight relevant text</li>
+							<li>• Hover on a category to select a new color</li>
+							<li>• Double click a category to change its name</li>
 						</ul>
 					</div>
 				</div>
@@ -242,7 +367,10 @@ export default function ReaderPage({ setCurrentPage }) {
 					<div className="max-w-3xl mx-auto px-8 py-12">
 						<article className="prose prose-lg max-w-none">
 							{document?.content ? (
-								<div dangerouslySetInnerHTML={{ __html: document.content }} />
+								<div 
+									dangerouslySetInnerHTML={{ __html: document.content }} 
+									id="document-content"
+								/>
 							) : (
 								<div className="text-gray-500 italic">
 									Loading document content...

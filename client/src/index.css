@@ -91,6 +91,15 @@
 	.btn-gradient:active {
 		transform: translateY(1px);
 	}
+
+	/* Custom highlight styles */
+	.highlight-span {
+		transition: background-color 0.2s ease;
+	}
+
+	.highlight-span:hover {
+		filter: brightness(0.9);
+	}
 }
 
 /* Custom scrollbar */
