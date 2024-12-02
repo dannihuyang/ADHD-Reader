@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Edit2 } from 'lucide-react';
 import { CATEGORY_COLORS } from '../config/constants';
+import '../styles/ReaderPage.css';
 
 export default function ReaderPage({ setCurrentPage }) {
   const contentRef = useRef(null);
@@ -176,11 +177,18 @@ export default function ReaderPage({ setCurrentPage }) {
         }
         setVisibleCategories(newVisibleCategories);
 
-        // Toggle highlight visibility
+        // Toggle all visual enhancements
         existingHighlights.forEach(highlight => {
-            highlight.style.backgroundColor = isCurrentlyVisible ? 
-                'transparent' : 
-                highlight.dataset.color;
+            if (isCurrentlyVisible) {
+                // Hide highlight
+                highlight.style.backgroundColor = 'transparent';
+                highlight.style.fontSize = 'inherit';  // Reset font size
+                // Keep the capitalization as it's part of the text content
+            } else {
+                // Show highlight
+                highlight.style.backgroundColor = highlight.dataset.color;
+                highlight.style.fontSize = '1.1em';  // Restore larger font size
+            }
         });
 
         return; // Exit early, no need to generate new highlights
@@ -244,8 +252,12 @@ const applyHighlights = (highlights, color, categoryId) => {
     const content = window.document.getElementById('document-content');
     if (!content) return;
 
-    // Normalize content the same way as backend
-    const normalizedContent = content.innerText.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+    // Get and normalize content
+    const contentText = content.innerText;
+    const normalizedContent = contentText
+        .replace(/\n+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
     highlights.forEach(highlight => {
         try {
@@ -253,14 +265,8 @@ const applyHighlights = (highlights, color, categoryId) => {
 
             // Find anchor positions in normalized content
             const startAnchorPos = normalizedContent.indexOf(highlight.startAnchor);
-            const endAnchorPos = normalizedContent.indexOf(highlight.endAnchor);
-
             if (startAnchorPos === -1) {
                 console.warn("Start anchor not found:", highlight.startAnchor);
-                return;
-            }
-            if (endAnchorPos === -1) {
-                console.warn("End anchor not found:", highlight.endAnchor);
                 return;
             }
 
@@ -268,13 +274,7 @@ const applyHighlights = (highlights, color, categoryId) => {
             const highlightStart = startAnchorPos + highlight.offset;
             const highlightEnd = highlightStart + highlight.length;
 
-            console.log("Highlight positions:", {
-                startAnchorPos,
-                endAnchorPos,
-                highlightStart,
-                highlightEnd,
-                text: normalizedContent.substring(highlightStart, highlightEnd)
-            });
+            console.log("Highlight text:", normalizedContent.substring(highlightStart, highlightEnd));
 
             // Create walker to find text nodes
             const walker = window.document.createTreeWalker(
@@ -293,13 +293,11 @@ const applyHighlights = (highlights, color, categoryId) => {
                 const nodeText = node.textContent;
                 const nodeLength = nodeText.length;
                 
-                // Find start position
                 if (!startNode && currentPos + nodeLength > highlightStart) {
                     startNode = node;
                     startOffset = highlightStart - currentPos;
                 }
                 
-                // Find end position
                 if (!endNode && currentPos + nodeLength > highlightEnd) {
                     endNode = node;
                     endOffset = highlightEnd - currentPos;
@@ -314,21 +312,67 @@ const applyHighlights = (highlights, color, categoryId) => {
                 range.setStart(startNode, startOffset);
                 range.setEnd(endNode, endOffset);
 
-                const span = window.document.createElement('span');
-                span.style.backgroundColor = `${color}40`;
-                span.classList.add(`category-${categoryId}`);
-                span.dataset.color = `${color}40`;
+                // Create wrapper span for the highlight
+                const highlightSpan = window.document.createElement('span');
+                highlightSpan.style.cssText = `
+                    background-color: ${color}40;
+                    display: inline;
+                    padding: 2px 0;
+                    transition: all 0.2s ease;
+                    line-height: 1.6;
+                    vertical-align: baseline;
+                `;
+                highlightSpan.classList.add(`category-${categoryId}`);
+                highlightSpan.dataset.color = `${color}40`;
 
                 try {
-                    range.surroundContents(span);
+                    range.surroundContents(highlightSpan);
+                    
+                    // Get the text content
+                    const text = highlightSpan.textContent;
+                    if (text.length > 0) {
+                        // Clear existing content
+                        highlightSpan.textContent = '';
+                        
+                        // Create first character span
+                        const firstCharSpan = window.document.createElement('span');
+                        firstCharSpan.style.cssText = `
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            font-size: 1.05em;
+                        `;
+                        firstCharSpan.textContent = text.charAt(0);
+                        
+                        // Add first character and rest of text
+                        highlightSpan.appendChild(firstCharSpan);
+                        highlightSpan.appendChild(
+                            window.document.createTextNode(text.slice(1))
+                        );
+                    }
                 } catch (e) {
                     console.log("Failed to surround contents, trying alternative method");
                     const fragment = range.extractContents();
-                    span.appendChild(fragment);
-                    range.insertNode(span);
+                    const text = fragment.textContent;
+                    
+                    if (text.length > 0) {
+                        // Create first character span
+                        const firstCharSpan = window.document.createElement('span');
+                        firstCharSpan.style.cssText = `
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            font-size: 1.05em;
+                        `;
+                        firstCharSpan.textContent = text.charAt(0);
+                        
+                        // Add first character and rest of text
+                        highlightSpan.appendChild(firstCharSpan);
+                        highlightSpan.appendChild(
+                            window.document.createTextNode(text.slice(1))
+                        );
+                    }
+                    
+                    range.insertNode(highlightSpan);
                 }
-            } else {
-                console.warn("Could not find appropriate nodes for highlight");
             }
         } catch (error) {
             console.warn("Error applying highlight:", error);

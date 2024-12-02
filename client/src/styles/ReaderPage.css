@@ -1,0 +1,26 @@
+/* Highlight styles */
+[class^="category-"] {
+    display: inline;
+    position: relative;
+    padding: 2px 0;
+    line-height: inherit;
+    transition: all 0.2s ease;
+}
+
+[class^="category-"]:hover {
+    filter: brightness(0.95);
+}
+
+/* First character styling */
+[class^="category-"] > span:first-child {
+    font-weight: bold;
+    text-transform: uppercase;
+    position: relative;
+    display: inline;
+}
+
+/* Ensure proper text flow */
+#document-content {
+    line-height: 1.6;
+    text-align: justify;
+}
