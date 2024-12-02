@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { CATEGORY_COLORS } = require('../config/constants');
 const OpenAI = require("openai");
+const { copyFileSync } = require("fs");
 
 const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -106,86 +107,52 @@ const generateHighlights = async (content, categories) => {
                 {
                     role: "system",
                     content: 
-                        "You are an expert content analyzer. Analyze the given text and identify relevant segments for the specified category.\n\n" +
-                        "Rules:\n" +
-                        "- Find 2-3 relevant text segments\n" +
-                        "- Each segment must be an exact match from the content\n" +
-                        "- Include the starting and ending character positions\n" +
-                        "- Segments should not overlap\n\n" +
-                        "Return a JSON object with this exact structure:\n" +
+                        "You are an expert text analyzer. For each relevant sentence:\n\n" +
+                        "1. Find a UNIQUE context phrase (10-15 chars) that appears BEFORE the sentence\n" +
+                        "2. Find a UNIQUE context phrase (10-15 chars) that appears AFTER the sentence\n" +
+                        "3. Calculate the exact offset and length\n\n" +
+                        "Example:\n" +
+                        'For "The cat sat on the mat. Dogs bark." you might return:\n' +
                         '{\n' +
-                        '  "categoryHighlights": {\n' +
-                        '    "category-id": [\n' +
-                        '      {\n' +
-                        '        "text": "exact text from content",\n' +
-                        '        "startIndex": number,\n' +
-                        '        "endIndex": number\n' +
-                        '      }\n' +
-                        '    ]\n' +
-                        '  }\n' +
-                        '}'
+                        '  "highlights": [{\n' +
+                        '    "startAnchor": "The cat",\n' +
+                        '    "endAnchor": "the mat",\n' +
+                        '    "offset": 0,\n' +
+                        '    "length": 22\n' +
+                        '  }]}\n\n' +
+                        'IMPORTANT: Anchors must be exact matches from the text.'
                 },
                 {
                     role: "user",
-                    content: `Content to analyze: "${content}"\n\nCategory to find highlights for: ${categories[0].name} (ID: ${categories[0].id})`
+                    content: 
+                        `Find 2-3 sentences related to "${categories[0].name}" in this text:\n\n${content}\n\n` +
+                        `For each sentence, provide unique anchor phrases and position details.`
                 }
             ],
-            temperature: 0.3,
+            temperature: 0.3
         });
 
-        let result;
-        try {
-            result = JSON.parse(response.choices[0].message.content);
-        } catch (parseError) {
-            console.error("Failed to parse OpenAI response:", response.choices[0].message.content);
-            throw new Error("Invalid JSON response from OpenAI");
-        }
+        const result = JSON.parse(response.choices[0].message.content);
+        console.log("OpenAI Response:", result);
 
-        // Validate basic structure
-        if (!result?.categoryHighlights) {
-            console.error("Missing categoryHighlights in response:", result);
-            throw new Error("Invalid response structure from OpenAI");
-        }
-
-        // Process and validate each highlight
-        const validatedHighlights = {};
-        
-        Object.entries(result.categoryHighlights).forEach(([categoryId, highlights]) => {
-            validatedHighlights[categoryId] = highlights.filter(highlight => {
-                // Ensure all required fields exist
-                if (!highlight?.text || !highlight?.startIndex || !highlight?.endIndex) {
-                    console.warn("Skipping highlight with missing fields:", highlight);
-                    return false;
-                }
-
-                // Find the actual position of this text in the content
-                const actualStartIndex = content.indexOf(highlight.text);
-                if (actualStartIndex === -1) {
-                    console.warn("Text not found in content:", highlight.text);
-                    return false;
-                }
-
-                // Update indices to actual positions
-                highlight.startIndex = actualStartIndex;
-                highlight.endIndex = actualStartIndex + highlight.text.length;
-
-                return true;
+        // Validate and log found highlights
+        if (result.highlights) {
+            result.highlights.forEach(h => {
+                const startPos = content.indexOf(h.startAnchor);
+                const highlightStart = startPos + h.offset;
+                const highlightText = content.substring(
+                    highlightStart, 
+                    highlightStart + h.length
+                );
+                console.log("Found highlight:", highlightText);
             });
-        });
+        }
 
-        return {
-            categoryHighlights: validatedHighlights
-        };
+        return result;
 
     } catch (error) {
         console.error("Error in generateHighlights:", error);
-        // Return empty highlights structure
-        return {
-            categoryHighlights: categories.reduce((acc, cat) => {
-                acc[cat.id] = [];
-                return acc;
-            }, {})
-        };
+        return { highlights: [] };
     }
 };
 

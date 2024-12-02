@@ -25,8 +25,6 @@ export default function ItemListPage({ setCurrentPage }) {
 	]);
 	const [isAutoGenerating, setIsAutoGenerating] = useState(true);
 
-	console.log('Category Colors:', documentCategories);
-
 	useEffect(() => {
 		fetch("http://localhost:3001/api/auth/me", {
 			credentials: "include", // include cookies, authorization headers

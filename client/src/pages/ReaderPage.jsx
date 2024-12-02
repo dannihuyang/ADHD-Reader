@@ -155,8 +155,39 @@ export default function ReaderPage({ setCurrentPage }) {
 
   const handleCategoryClick = async (category) => {
     console.log("Category clicked:", category.name);
-    setProcessingCategory(category.id);
+    
+    const content = window.document.getElementById('document-content');
+    if (!content) return;
 
+    // Check if highlights already exist for this category
+    const existingHighlights = content.querySelectorAll(`.category-${category.id}`);
+    console.log("Existing highlights:", existingHighlights.length);
+
+    // If highlights exist, just toggle their visibility
+    if (existingHighlights.length > 0) {
+        const isCurrentlyVisible = visibleCategories.has(category.id);
+        
+        // Update visibility state
+        const newVisibleCategories = new Set(visibleCategories);
+        if (isCurrentlyVisible) {
+            newVisibleCategories.delete(category.id);
+        } else {
+            newVisibleCategories.add(category.id);
+        }
+        setVisibleCategories(newVisibleCategories);
+
+        // Toggle highlight visibility
+        existingHighlights.forEach(highlight => {
+            highlight.style.backgroundColor = isCurrentlyVisible ? 
+                'transparent' : 
+                highlight.dataset.color;
+        });
+
+        return; // Exit early, no need to generate new highlights
+    }
+
+    // Only proceed with highlight generation if none exist
+    setProcessingCategory(category.id);
     try {
         const response = await fetch(
             `http://localhost:3001/api/highlights/generate/${category.id}`,
@@ -167,24 +198,15 @@ export default function ReaderPage({ setCurrentPage }) {
         );
         
         const data = await response.json();
-        console.log("Received highlight data:", data);
+        console.log("Received highlights:", data.highlights.length);
 
         if (data.highlights && Array.isArray(data.highlights)) {
-            // Check for existing highlights using window.document
-            const content = window.document.getElementById('document-content');
-            if (!content) {
-                console.error("Content element not found");
-                return;
-            }
-
-            const existingHighlights = content.querySelectorAll(`.category-${category.id}`);
-            console.log("Existing highlights found:", existingHighlights.length);
-
-            toggleCategoryVisibility(category.id);
+            applyHighlights(data.highlights, category.color, category.id);
             
-            if (existingHighlights.length === 0) {
-                applyHighlights(data.highlights, category.color, category.id);
-            }
+            // Make new highlights visible
+            const newVisibleCategories = new Set(visibleCategories);
+            newVisibleCategories.add(category.id);
+            setVisibleCategories(newVisibleCategories);
         }
     } catch (error) {
         console.error("Error in handleCategoryClick:", error);
@@ -220,14 +242,41 @@ const toggleCategoryVisibility = (categoryId) => {
 
 const applyHighlights = (highlights, color, categoryId) => {
     const content = window.document.getElementById('document-content');
-    if (!content) {
-        console.error("Content element not found");
-        return;
-    }
+    if (!content) return;
+
+    // Normalize content the same way as backend
+    const normalizedContent = content.innerText.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
 
     highlights.forEach(highlight => {
         try {
-            const range = window.document.createRange();
+            console.log("Processing highlight:", highlight);
+
+            // Find anchor positions in normalized content
+            const startAnchorPos = normalizedContent.indexOf(highlight.startAnchor);
+            const endAnchorPos = normalizedContent.indexOf(highlight.endAnchor);
+
+            if (startAnchorPos === -1) {
+                console.warn("Start anchor not found:", highlight.startAnchor);
+                return;
+            }
+            if (endAnchorPos === -1) {
+                console.warn("End anchor not found:", highlight.endAnchor);
+                return;
+            }
+
+            // Calculate highlight positions
+            const highlightStart = startAnchorPos + highlight.offset;
+            const highlightEnd = highlightStart + highlight.length;
+
+            console.log("Highlight positions:", {
+                startAnchorPos,
+                endAnchorPos,
+                highlightStart,
+                highlightEnd,
+                text: normalizedContent.substring(highlightStart, highlightEnd)
+            });
+
+            // Create walker to find text nodes
             const walker = window.document.createTreeWalker(
                 content,
                 NodeFilter.SHOW_TEXT,
@@ -236,43 +285,53 @@ const applyHighlights = (highlights, color, categoryId) => {
             );
 
             let currentPos = 0;
-            let startNode = null;
-            let endNode = null;
-            let startOffset = 0;
-            let endOffset = 0;
-
+            let startNode, startOffset, endNode, endOffset;
             let node;
-            while ((node = walker.nextNode())) {
-                const nodeLength = node.textContent.length;
 
-                if (!startNode && currentPos + nodeLength > highlight.startIndex) {
+            // Map positions to DOM nodes
+            while (node = walker.nextNode()) {
+                const nodeText = node.textContent;
+                const nodeLength = nodeText.length;
+                
+                // Find start position
+                if (!startNode && currentPos + nodeLength > highlightStart) {
                     startNode = node;
-                    startOffset = highlight.startIndex - currentPos;
+                    startOffset = highlightStart - currentPos;
                 }
-
-                if (!endNode && currentPos + nodeLength >= highlight.endIndex) {
+                
+                // Find end position
+                if (!endNode && currentPos + nodeLength > highlightEnd) {
                     endNode = node;
-                    endOffset = highlight.endIndex - currentPos;
+                    endOffset = highlightEnd - currentPos;
                     break;
                 }
-
+                
                 currentPos += nodeLength;
             }
 
             if (startNode && endNode) {
+                const range = window.document.createRange();
                 range.setStart(startNode, startOffset);
                 range.setEnd(endNode, endOffset);
 
-                const highlightSpan = window.document.createElement('span');
-                highlightSpan.className = `highlight-span category-${categoryId}`;
-                highlightSpan.dataset.color = `${color}40`;
-                highlightSpan.style.backgroundColor = `${color}40`;
-                highlightSpan.style.transition = 'background-color 0.2s ease';
-                
-                range.surroundContents(highlightSpan);
+                const span = window.document.createElement('span');
+                span.style.backgroundColor = `${color}40`;
+                span.classList.add(`category-${categoryId}`);
+                span.dataset.color = `${color}40`;
+
+                try {
+                    range.surroundContents(span);
+                } catch (e) {
+                    console.log("Failed to surround contents, trying alternative method");
+                    const fragment = range.extractContents();
+                    span.appendChild(fragment);
+                    range.insertNode(span);
+                }
+            } else {
+                console.warn("Could not find appropriate nodes for highlight");
             }
         } catch (error) {
-            console.error("Error applying highlight:", error);
+            console.warn("Error applying highlight:", error);
         }
     });
 };

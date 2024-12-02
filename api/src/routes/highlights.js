@@ -72,76 +72,42 @@ router.get("/:categoryId", requireAuth, async (req, res) => {
 
 // Generate highlights for a specific category using OpenAI
 router.post("/generate/:categoryId", requireAuth, async (req, res) => {
-    const { categoryId } = req.params;
-
     try {
-        // Fetch category and its document
+        const { categoryId } = req.params;
+        
         const category = await prisma.category.findUnique({
-            where: {
-                id: categoryId,
-                document: {
-                    userId: req.user.id
-                }
-            },
-            include: {
-                document: true
-            }
+            where: { id: categoryId },
+            include: { document: true }
         });
 
-        if (!category) {
-            return res.status(404).json({ error: "Category not found or unauthorized" });
+        if (!category || !category.document) {
+            return res.status(404).json({ error: 'Category or document not found' });
         }
 
-        // First delete any existing highlights for this category
-        await prisma.highlight.deleteMany({
-            where: {
-                categoryId: category.id
-            }
-        });
+        // Generate highlights with semantic anchors
+        const result = await generateHighlights(category.document.content, [category]);
 
-        // Generate highlights using OpenAI for this specific category
-        const generatedHighlights = await generateHighlights(
-            category.document.content,
-            [category] // Pass only this category
-        );
+        // Store highlights using transaction
+        await prisma.$transaction([
+            prisma.highlight.deleteMany({
+                where: { categoryId }
+            }),
+            prisma.highlight.createMany({
+                data: result.highlights.map(highlight => ({
+                    ...highlight,
+                    categoryId
+                }))
+            })
+        ]);
 
-        // Create the highlights in the database
-        const createdHighlights = await Promise.all(
-            (generatedHighlights.categoryHighlights[category.id] || []).map(highlight =>
-                prisma.highlight.create({
-                    data: {
-                        startIndex: highlight.startIndex,
-                        endIndex: highlight.endIndex,
-                        text: highlight.text,
-                        categoryId: category.id
-                    },
-                    include: {
-                        category: {
-                            select: {
-                                name: true,
-                                color: true
-                            }
-                        }
-                    }
-                })
-            )
-        );
-
-        res.json({
-            category: {
-                id: category.id,
-                name: category.name,
-                color: category.color
-            },
-            highlights: createdHighlights
+        res.json({ 
+            category,
+            highlights: result.highlights
         });
 
     } catch (error) {
-        console.error("Error generating highlights:", error);
-        res.status(500).json({ 
-            error: "Error generating highlights",
-            details: error.message 
-        });
+        console.error('Error generating highlights:', error);
+        res.status(500).json({ error: 'Failed to generate highlights' });
     }
 });
 

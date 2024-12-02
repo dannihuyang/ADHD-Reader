@@ -101,7 +101,6 @@ router.put("/:id", requireAuth, async (req, res) => {
 // Delete a document
 router.delete("/:id", requireAuth, async (req, res) => {
 	const { id } = req.params;
-	console.log("Received delete request for document ID:", id); // Debug log
 
 	try {
 		// First check if document exists

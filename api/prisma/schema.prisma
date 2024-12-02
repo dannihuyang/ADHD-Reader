@@ -44,12 +44,11 @@ model Category {
 }
 
 model Highlight {
-    id          String   @id @default(cuid())
-    startIndex  Int
-    endIndex    Int
-    text        String
+    id          String   @id @default(uuid())
+    startAnchor String?   // e.g., "There are two types"
+    endAnchor   String?   // e.g., "of hallucination:"
+    offset      Int?      // Characters to include after startAnchor
+    length      Int?      // Length of highlighted text
     categoryId  String
     category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
 }
