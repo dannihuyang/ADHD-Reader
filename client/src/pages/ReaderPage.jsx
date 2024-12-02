@@ -300,23 +300,42 @@ const applyHighlights = (highlights, color, categoryId) => {
 								>
 									{/* Category content */}
 									<div className="flex items-center gap-3">
-										<div 
-											className={`w-4 h-4 rounded-full flex-shrink-0 transition-transform
-												${visibleCategories.has(category.id) ? 'scale-110' : ''}
-											`}
-											style={{ 
-												backgroundColor: category.color,
-												boxShadow: visibleCategories.has(category.id) 
-													? `0 0 0 2px white, 0 0 0 4px ${category.color}40` 
-													: 'none'
-											}}
-										/>
+										{/* Color dot with processing animation */}
+										<div className="relative">
+											<div 
+												className={`w-4 h-4 rounded-full flex-shrink-0 transition-transform
+													${visibleCategories.has(category.id) ? 'scale-110' : ''}
+													${processingCategory === category.id ? 'opacity-50' : ''}
+												`}
+												style={{ 
+													backgroundColor: category.color,
+													boxShadow: visibleCategories.has(category.id) 
+														? `0 0 0 2px white, 0 0 0 4px ${category.color}40` 
+														: 'none'
+												}}
+											/>
+											{/* Processing spinner overlay */}
+											{processingCategory === category.id && (
+												<div className="absolute inset-0 flex items-center justify-center">
+													<div 
+														className="w-6 h-6 border-2 border-transparent rounded-full animate-spin"
+														style={{ 
+															borderTopColor: category.color,
+															borderRightColor: category.color
+														}}
+													/>
+												</div>
+											)}
+										</div>
+
+										{/* Category name */}
 										<span className={`text-sm text-gray-900 transition-all
 											${visibleCategories.has(category.id) 
 												? 'font-semibold transform translate-x-0.5' 
 												: 'font-normal'
-											}`}
-										>
+											}
+											${processingCategory === category.id ? 'opacity-50' : ''}
+										`}>
 											{category.name}
 										</span>
 									</div>
