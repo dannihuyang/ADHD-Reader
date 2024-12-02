@@ -86,10 +86,14 @@ export default function ReaderPage({ setCurrentPage }) {
 	};
 
 	const handleCategoryNameUpdate = async (categoryId, newName) => {
+		console.log("Updating category:", categoryId, "to:", newName);
+		setProcessingCategory(categoryId);
+
 		try {
 			const currentCategory = categories.find(cat => cat.id === categoryId);
 			if (!currentCategory) return;
 
+			// Update category name in database
 			const response = await fetch(`http://localhost:3001/api/categories/${categoryId}`, {
 				method: 'PUT',
 				headers: {
@@ -103,16 +107,49 @@ export default function ReaderPage({ setCurrentPage }) {
 			});
 
 			if (!response.ok) throw new Error('Failed to update category name');
-
 			const updatedCategory = await response.json();
+
+			// Update local state
 			setCategories(prevCategories => 
 				prevCategories.map(cat => 
 					cat.id === categoryId ? updatedCategory : cat
 				)
 			);
-			setEditingCategory(null);
+
+			// Generate new highlights for updated category
+			const highlightsResponse = await fetch(
+				`http://localhost:3001/api/highlights/generate/${categoryId}`,
+				{
+					method: 'POST',
+					credentials: 'include'
+				}
+			);
+
+			if (!highlightsResponse.ok) throw new Error('Failed to generate new highlights');
+			const data = await highlightsResponse.json();
+
+			// Remove old highlights
+			const content = window.document.getElementById('document-content');
+			if (content) {
+				const oldHighlights = content.querySelectorAll(`.category-${categoryId}`);
+				oldHighlights.forEach(highlight => highlight.remove());
+			}
+
+			// Apply new highlights
+			if (data.highlights && Array.isArray(data.highlights)) {
+				applyHighlights(data.highlights, updatedCategory.color, categoryId);
+				
+				// Make sure the category is visible
+				const newVisibleCategories = new Set(visibleCategories);
+				newVisibleCategories.add(categoryId);
+				setVisibleCategories(newVisibleCategories);
+			}
+
 		} catch (error) {
-			console.error('Error updating category name:', error);
+			console.error('Error updating category:', error);
+		} finally {
+			setProcessingCategory(null);
+			setEditingCategory(null);
 		}
 	};
 
@@ -336,7 +373,32 @@ const applyHighlights = (highlights, color, categoryId) => {
 											}
 											${processingCategory === category.id ? 'opacity-50' : ''}
 										`}>
-											{category.name}
+											{editingCategory === category.id ? (
+												<input
+													autoFocus
+													className="text-sm font-medium text-gray-900 bg-transparent border-none focus:ring-0 flex-1"
+													value={category.name}
+													onClick={(e) => e.stopPropagation()}
+													onChange={(e) => {
+														const newCategories = [...categories];
+														const index = newCategories.findIndex(c => c.id === category.id);
+														newCategories[index] = { ...category, name: e.target.value };
+														setCategories(newCategories);
+													}}
+													onBlur={() => {
+														if (category.name.trim()) {
+															handleCategoryNameUpdate(category.id, category.name);
+														}
+													}}
+													onKeyDown={(e) => {
+														if (e.key === 'Enter' && category.name.trim()) {
+															handleCategoryNameUpdate(category.id, category.name);
+														}
+													}}
+												/>
+											) : (
+												category.name
+											)}
 										</span>
 									</div>
 
