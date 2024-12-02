@@ -94,7 +94,10 @@
 
 	/* Custom highlight styles */
 	.highlight-span {
-		transition: background-color 0.2s ease;
+		transition: all 0.2s ease;
+		cursor: pointer;
+		padding: 2px 0;
+		border-radius: 2px;
 	}
 
 	.highlight-span:hover {

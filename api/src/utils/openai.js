@@ -13,7 +13,7 @@ const generateTitle = async (content) => {
 		if (!content || content.trim() === "") return "Untitled Document";
 
 		const response = await openai.chat.completions.create({
-			model: "gpt-4",
+			model: "gpt-4o-mini",
 			messages: [
 				{
 					role: "system",
@@ -52,7 +52,7 @@ const generateTitle = async (content) => {
 const generateCategories = async (content) => {
     try {
         const response = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
@@ -101,7 +101,7 @@ const generateCategories = async (content) => {
 const generateHighlights = async (content, categories) => {
     try {
         const response = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",

@@ -317,7 +317,7 @@ export default function ItemListPage({ setCurrentPage }) {
 															style={{ backgroundColor: category.color }}
 														/>
 														<span className="text-sm font-medium text-gray-700">
-															{category.name || `Category ${index + 1}`}
+															{category.name || `Generated ${index + 1}`}
 														</span>
 													</div>
 												) : (
