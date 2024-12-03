@@ -100,33 +100,43 @@ const generateCategories = async (content) => {
 };
 
 const generateHighlights = async (content, categories) => {
+
+    const systemPrompt = `You are an expert text analyzer. Your task is to find 2-3 complete, relevant sentences about the given topic.
+
+    CRITICAL RULES:
+    1. Return ONLY complete grammatical sentences
+    2. Each sentence must be relevant to the topic
+    3. Include the full sentence with proper punctuation
+
+    Return format:
+    {
+      "highlights": [
+        {
+          "text": "Complete sentence one with proper punctuation."
+        },
+        {
+          "text": "Complete sentence two with proper punctuation."
+        }
+      ]
+    }
+
+    IMPORTANT: 
+    - Each text must be a complete sentence
+    - Include punctuation
+    - Ensure relevance to the topic`;
+    
     try {
         const response = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
-                    content: 
-                        "You are an expert text analyzer. For each relevant sentence:\n\n" +
-                        "1. Find a UNIQUE context phrase (10-15 chars) that appears BEFORE the sentence\n" +
-                        "2. Find a UNIQUE context phrase (10-15 chars) that appears AFTER the sentence\n" +
-                        "3. Calculate the exact offset and length\n\n" +
-                        "Example:\n" +
-                        'For "The cat sat on the mat. Dogs bark." you might return:\n' +
-                        '{\n' +
-                        '  "highlights": [{\n' +
-                        '    "startAnchor": "The cat",\n' +
-                        '    "endAnchor": "the mat",\n' +
-                        '    "offset": 0,\n' +
-                        '    "length": 22\n' +
-                        '  }]}\n\n' +
-                        'IMPORTANT: Anchors must be exact matches from the text.'
+                    content: systemPrompt
                 },
                 {
                     role: "user",
                     content: 
-                        `Find 2-3 sentences related to "${categories[0].name}" in this text:\n\n${content}\n\n` +
-                        `For each sentence, provide unique anchor phrases and position details.`
+                        `Find 2-3 sentences related to "${categories[0].name}" in this text:\n\n${content}\n\n`
                 }
             ],
             temperature: 0.3
@@ -134,24 +144,10 @@ const generateHighlights = async (content, categories) => {
 
         const result = JSON.parse(response.choices[0].message.content);
         console.log("OpenAI Response:", result);
-
-        // Validate and log found highlights
-        if (result.highlights) {
-            result.highlights.forEach(h => {
-                const startPos = content.indexOf(h.startAnchor);
-                const highlightStart = startPos + h.offset;
-                const highlightText = content.substring(
-                    highlightStart, 
-                    highlightStart + h.length
-                );
-                console.log("Found highlight:", highlightText);
-            });
-        }
-
         return result;
 
     } catch (error) {
-        console.error("Error in generateHighlights:", error);
+        console.error("openai.js Error in generateHighlights:", error);
         return { highlights: [] };
     }
 };

@@ -35,8 +35,6 @@ router.get("/:categoryId", requireAuth, async (req, res) => {
             },
             select: {
                 id: true,
-                startIndex: true,
-                endIndex: true,
                 text: true,
                 categoryId: true,
                 category: {
@@ -45,9 +43,6 @@ router.get("/:categoryId", requireAuth, async (req, res) => {
                         color: true
                     }
                 }
-            },
-            orderBy: {
-                startIndex: 'asc'  // Order highlights by their position in text
             }
         });
 
@@ -90,12 +85,14 @@ router.post("/generate/:categoryId", requireAuth, async (req, res) => {
         // Store highlights using transaction
         await prisma.$transaction([
             prisma.highlight.deleteMany({
-                where: { categoryId }
+                where: {
+                    categoryId: categoryId
+                }
             }),
             prisma.highlight.createMany({
                 data: result.highlights.map(highlight => ({
-                    ...highlight,
-                    categoryId
+                    text: highlight.text,
+                    categoryId: categoryId
                 }))
             })
         ]);
@@ -110,5 +107,6 @@ router.post("/generate/:categoryId", requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Failed to generate highlights' });
     }
 });
+
 
 module.exports = router;
