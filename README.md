@@ -1,41 +1,144 @@
 # ADHD Reader
 
-ADHD Reader is a web application designed to help users manage and enhance their reading experience. With features like document upload, highlighting, and topic categorization, ADHD Reader makes it easier to focus and engage with reading material.
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Technical Architecture](#technical-architecture)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation Steps](#installation-steps)
+    - [API Setup](#api-setup)
+    - [Client Setup](#client-setup)
+- [Development](#development)
+  - [Running the Application](#running-the-application)
+  - [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Security Notes](#security-notes)
+- [Known Issues](#known-issues)
+
+## Overview
+ADHD Reader is an innovative web application designed to enhance reading accessibility and efficiency for individuals with ADHD or anyone struggling with traditional reading tools. The application leverages the GPT-4o-mini model to automatically highlight and categorize text content, helping users maintain focus and improve comprehension of written material.
 
 ## Features
+- 🤖 **AI-Powered Analysis**: Utilizes GPT-4o-mini for text analysis and categorization
+- 🎨 **Smart Highlighting**: Automatic highlighting of key concepts
+- 📚 **Document Management**: Comprehensive system for managing reading materials
+- 🔐 **Secure Authentication**: User authentication and data protection
+- 💡 **Interactive Demo**: Homepage demonstration of key features
 
-- User registration and authentication
-- Document upload and management
-- Text highlighting with category labels
-- Topic-based filtering of highlights (to be implemented)
-- Reading progress tracking (to be implemented)
-- Responsive design for mobile, tablet, and desktop devices (to be implemented)
+## Technical Architecture
+### Frontend
+- Framework: React
+- Development Server: Vite
+- URL: http://localhost:5173
 
-## User Instructions
+### Backend
+- Runtime: Node.js
+- Framework: Express
+- Database: PostgreSQL
+- ORM: Prisma
+- Authentication: JWT, bcrypt
+- URL: http://localhost:3001
 
-### 1. **Register or Log In**
+## Getting Started
 
-- Create a new account by visiting the Register page.
-- If you already have an account, log in using your email and password on the Login page.
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- PostgreSQL (v12 or higher)
 
-### 2. **Add Texts**
+### Installation Steps
 
-- Navigate to the Item List page after logging in.
-- Click the "+New Document" button to paste new text to your library.
-- You can enter "Document Title" or it will be generated based on your content.
-- Click "Create Document" to generate the highlights.
-- **Note:** The inference time for generating highlights for a new document may take approximately 5 to 15 seconds, depending on the size of the document.
+#### API Setup
+```bash
+# Navigate to API directory
+cd api
 
-### 3. **Read and Highlight**
+# Install dependencies
+npm install
 
-- Select a document from your library to open it in the Reader view.
-- Highlight text by selecting the desired portion and assigning it a category label from the options provided.
+# Configure environment
+cp .env.example .env
 
-### 4. **Delete Documents**
+# Update .env with your settings:
+DATABASE_URL="postgresql://username:password@localhost:5432/adhd_reader"
+JWT_SECRET="your-secret-key"
+PORT=3001
 
-- To delete a document, click the delete icon on the document card in your library by toggling on the document item.
-- Confirm the deletion when prompted to remove the document permanently.
+# Run database migrations
+npx prisma migrate dev
+```
 
-**API Key**
+#### Client Setup
+```bash
+# Navigate to client directory
+cd ../client
 
-For ease of use, an open API key is included in this project. Better security methods, such as using environment variables or secret management solutions, will be implemented in the future.
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+
+# Update .env with:
+VITE_API_URL="http://localhost:3001"
+```
+
+## Development
+
+### Running the Application
+1. Start the API server:
+   ```bash
+   cd api
+   npm run dev
+   ```
+
+2. Start the client development server:
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+### Testing
+Run API tests:
+```bash
+cd api
+npm test
+```
+
+#### Manual Testing Checklist
+1. Register a new account
+2. Log in with credentials
+3. Try the homepage demo
+4. Create a new document
+5. Test highlighting features
+6. Verify category management
+
+## Project Structure
+```
+adhd-reader/
+├── api/                   # Backend API
+│   ├── src/               # Source files
+│   ├── prisma/            # Database schema and migrations
+│ 
+├── client/                # Frontend React application
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   ├── pages/        # Page components
+│   │   ├── config/       # Configuration files
+│   │   └── utils/        # Utility functions
+│ 
+└── accessibility_reports/
+```
+
+## Security Notes
+- Currently using an open API key for development
+- Future improvements planned:
+  - Environment variable implementation
+  - Secret management solutions
+  - Enhanced authentication security
+
+## Known Issues
+- Limited to local development environment
+- Demo data resets on server restart
+- Basic API key security needs enhancement
