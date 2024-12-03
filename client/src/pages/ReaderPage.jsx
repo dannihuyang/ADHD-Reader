@@ -160,11 +160,9 @@ export default function ReaderPage({ setCurrentPage }) {
     const content = window.document.getElementById('document-content');
     if (!content) return;
 
-    // Check if highlights already exist for this category
     const existingHighlights = content.querySelectorAll(`.category-${category.id}`);
     console.log("Existing highlights:", existingHighlights.length);
 
-    // If highlights exist, just toggle their visibility
     if (existingHighlights.length > 0) {
         const isCurrentlyVisible = visibleCategories.has(category.id);
         
@@ -183,7 +181,6 @@ export default function ReaderPage({ setCurrentPage }) {
                 // Hide highlight
                 highlight.style.backgroundColor = 'transparent';
                 highlight.style.fontSize = 'inherit';  // Reset font size
-                // Keep the capitalization as it's part of the text content
             } else {
                 // Show highlight
                 highlight.style.backgroundColor = highlight.dataset.color;
@@ -194,7 +191,6 @@ export default function ReaderPage({ setCurrentPage }) {
         return; // Exit early, no need to generate new highlights
     }
 
-    // Only proceed with highlight generation if none exist
     setProcessingCategory(category.id);
     try {
         const response = await fetch(
@@ -252,31 +248,8 @@ const applyHighlights = (highlights, color, categoryId) => {
     const content = window.document.getElementById('document-content');
     if (!content) return;
 
-    // Get and normalize content
-    const contentText = content.innerText;
-    const normalizedContent = contentText
-        .replace(/\n+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
     highlights.forEach(highlight => {
         try {
-            console.log("Processing highlight:", highlight);
-
-            // Find anchor positions in normalized content
-            const startAnchorPos = normalizedContent.indexOf(highlight.startAnchor);
-            if (startAnchorPos === -1) {
-                console.warn("Start anchor not found:", highlight.startAnchor);
-                return;
-            }
-
-            // Calculate highlight positions
-            const highlightStart = startAnchorPos + highlight.offset;
-            const highlightEnd = highlightStart + highlight.length;
-
-            console.log("Highlight text:", normalizedContent.substring(highlightStart, highlightEnd));
-
-            // Create walker to find text nodes
             const walker = window.document.createTreeWalker(
                 content,
                 NodeFilter.SHOW_TEXT,
@@ -284,94 +257,77 @@ const applyHighlights = (highlights, color, categoryId) => {
                 false
             );
 
-            let currentPos = 0;
-            let startNode, startOffset, endNode, endOffset;
             let node;
-
-            // Map positions to DOM nodes
             while (node = walker.nextNode()) {
-                const nodeText = node.textContent;
-                const nodeLength = nodeText.length;
-                
-                if (!startNode && currentPos + nodeLength > highlightStart) {
-                    startNode = node;
-                    startOffset = highlightStart - currentPos;
-                }
-                
-                if (!endNode && currentPos + nodeLength > highlightEnd) {
-                    endNode = node;
-                    endOffset = highlightEnd - currentPos;
-                    break;
-                }
-                
-                currentPos += nodeLength;
-            }
+                const index = node.textContent.indexOf(highlight.text);
+                if (index !== -1) {
+                    const range = window.document.createRange();
+                    range.setStart(node, index);
+                    range.setEnd(node, index + highlight.text.length);
 
-            if (startNode && endNode) {
-                const range = window.document.createRange();
-                range.setStart(startNode, startOffset);
-                range.setEnd(endNode, endOffset);
+                    // Create wrapper span for the highlight
+                    const highlightSpan = window.document.createElement('span');
+                    highlightSpan.style.cssText = `
+                        background-color: ${color}40;
+                        display: inline;
+                        padding: 2px 0;
+                        transition: all 0.2s ease;
+                        line-height: 1.6;
+                        vertical-align: baseline;
+                        font-size: 1.1em;  // Increased font size for entire highlight
+                    `;
+                    highlightSpan.classList.add(`category-${categoryId}`);
+                    highlightSpan.dataset.color = `${color}40`;
 
-                // Create wrapper span for the highlight
-                const highlightSpan = window.document.createElement('span');
-                highlightSpan.style.cssText = `
-                    background-color: ${color}40;
-                    display: inline;
-                    padding: 2px 0;
-                    transition: all 0.2s ease;
-                    line-height: 1.6;
-                    vertical-align: baseline;
-                `;
-                highlightSpan.classList.add(`category-${categoryId}`);
-                highlightSpan.dataset.color = `${color}40`;
-
-                try {
-                    range.surroundContents(highlightSpan);
-                    
-                    // Get the text content
-                    const text = highlightSpan.textContent;
-                    if (text.length > 0) {
-                        // Clear existing content
-                        highlightSpan.textContent = '';
+                    try {
+                        range.surroundContents(highlightSpan);
                         
-                        // Create first character span
-                        const firstCharSpan = window.document.createElement('span');
-                        firstCharSpan.style.cssText = `
-                            font-weight: bold;
-                            text-transform: uppercase;
-                            font-size: 1.05em;
-                        `;
-                        firstCharSpan.textContent = text.charAt(0);
+                        // Get the text content
+                        const text = highlightSpan.textContent;
+                        if (text.length > 0) {
+                            // Clear existing content
+                            highlightSpan.textContent = '';
+                            
+                            // Create first character span
+                            const firstCharSpan = window.document.createElement('span');
+                            firstCharSpan.style.cssText = `
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                font-size: 1.05em;
+                            `;
+                            firstCharSpan.textContent = text.charAt(0);
+                            
+                            // Add first character and rest of text
+                            highlightSpan.appendChild(firstCharSpan);
+                            highlightSpan.appendChild(
+                                window.document.createTextNode(text.slice(1))
+                            );
+                        }
+                    } catch (e) {
+                        console.log("Failed to surround contents, trying alternative method");
+                        const fragment = range.extractContents();
+                        const text = fragment.textContent;
                         
-                        // Add first character and rest of text
-                        highlightSpan.appendChild(firstCharSpan);
-                        highlightSpan.appendChild(
-                            window.document.createTextNode(text.slice(1))
-                        );
+                        if (text.length > 0) {
+                            // Create first character span
+                            const firstCharSpan = window.document.createElement('span');
+                            firstCharSpan.style.cssText = `
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                font-size: 1.05em;
+                            `;
+                            firstCharSpan.textContent = text.charAt(0);
+                            
+                            // Add first character and rest of text
+                            highlightSpan.appendChild(firstCharSpan);
+                            highlightSpan.appendChild(
+                                window.document.createTextNode(text.slice(1))
+                            );
+                        }
+                        
+                        range.insertNode(highlightSpan);
                     }
-                } catch (e) {
-                    console.log("Failed to surround contents, trying alternative method");
-                    const fragment = range.extractContents();
-                    const text = fragment.textContent;
-                    
-                    if (text.length > 0) {
-                        // Create first character span
-                        const firstCharSpan = window.document.createElement('span');
-                        firstCharSpan.style.cssText = `
-                            font-weight: bold;
-                            text-transform: uppercase;
-                            font-size: 1.05em;
-                        `;
-                        firstCharSpan.textContent = text.charAt(0);
-                        
-                        // Add first character and rest of text
-                        highlightSpan.appendChild(firstCharSpan);
-                        highlightSpan.appendChild(
-                            window.document.createTextNode(text.slice(1))
-                        );
-                    }
-                    
-                    range.insertNode(highlightSpan);
+                    break;  // Exit loop after highlighting
                 }
             }
         } catch (error) {
