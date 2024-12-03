@@ -1,3 +1,6 @@
+import React, { useState } from 'react';
+import { CATEGORY_COLORS } from '../config/constants';
+
 export default function Homepage({ setCurrentPage }) {
 	// Add some sample documents/previews
 	const sampleDocuments = [
@@ -14,6 +17,9 @@ export default function Homepage({ setCurrentPage }) {
 			category: "Education"
 		}
 	];
+
+	// Add this state at the top of your component
+	const [activeHighlight, setActiveHighlight] = useState(null);
 
 	return (
 		<div className="min-h-screen flex flex-col bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
@@ -35,12 +41,132 @@ export default function Homepage({ setCurrentPage }) {
 					</h1>
 					
 					{/* Enhanced subheading */}
-					<p className="text-2xl text-white/90 mb-8 leading-relaxed">
-						Transform your reading experience with AI-powered highlighting
-						and smart organization. Perfect for students, professionals,
-						and anyone who wants to read more effectively.
-					</p>
-					
+					<div className="max-w-3xl mx-auto mb-12">
+						<p className="text-2xl text-white/90 mb-8 leading-relaxed">
+							Transform your reading experience with AI-powered highlighting
+							and smart organization.
+							<span className="block mt-2 text-lg">
+								<span className="relative inline-block">
+									Click the categories
+									<span className="absolute inset-0 bg-white/20 transform -skew-x-12 animate-highlight"></span>
+								</span>
+								<span className="text-white/80">↓</span>
+							</span>
+						</p>
+
+						<div className="bg-white rounded-xl p-6 shadow-xl relative">
+							{/* Sample Text with Interactive Highlights */}
+							<div className="prose prose-lg max-w-none">
+								<p className="mb-4">
+									<span 
+										className="relative cursor-pointer group"
+										onClick={() => setActiveHighlight('research')}
+										style={{
+											backgroundColor: activeHighlight === 'research' 
+												? `${CATEGORY_COLORS.FIRST}30` 
+												: 'transparent'
+										}}
+									>
+										Recent research suggests that ADHD affects approximately 5% of adults worldwide.
+										{activeHighlight === 'research' && (
+											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
+												  style={{ backgroundColor: CATEGORY_COLORS.FIRST }}>
+												Category: Research Data
+											</span>
+										)}
+									</span>
+									{' '}
+									<span 
+										className="relative cursor-pointer group"
+										onClick={() => setActiveHighlight('symptoms')}
+										style={{
+											backgroundColor: activeHighlight === 'symptoms' 
+												? `${CATEGORY_COLORS.SECOND}30` 
+												: 'transparent'
+										}}
+									>
+										Common symptoms include difficulty maintaining focus, hyperactivity, and impulsive behavior.
+										{activeHighlight === 'symptoms' && (
+											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
+												  style={{ backgroundColor: CATEGORY_COLORS.SECOND }}>
+												Category: Symptoms
+											</span>
+										)}
+									</span>
+									{' '}
+									<span 
+										className="relative cursor-pointer group"
+										onClick={() => setActiveHighlight('treatment')}
+										style={{
+											backgroundColor: activeHighlight === 'treatment' 
+												? `${CATEGORY_COLORS.THIRD}30` 
+												: 'transparent'
+										}}
+									>
+										Treatment options often include a combination of medication, therapy, and lifestyle adjustments.
+										{activeHighlight === 'treatment' && (
+											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
+												  style={{ backgroundColor: CATEGORY_COLORS.THIRD }}>
+												Category: Treatment
+											</span>
+										)}
+									</span>
+								</p>
+							</div>
+
+							{/* Category Pills */}
+							<div className="flex gap-2 mb-6">
+								<button 
+									onClick={() => setActiveHighlight('research')}
+									className="px-3 py-1.5 rounded-full text-sm transition-all hover:shadow-sm"
+									style={{
+										backgroundColor: activeHighlight === 'research' 
+											? CATEGORY_COLORS.FIRST 
+											: `${CATEGORY_COLORS.FIRST}20`,
+										color: activeHighlight === 'research' 
+											? 'white' 
+											: CATEGORY_COLORS.FIRST
+									}}
+								>
+									Research Data
+								</button>
+								<button 
+									onClick={() => setActiveHighlight('symptoms')}
+									className="px-3 py-1 rounded-full text-sm transition-all"
+									style={{
+										backgroundColor: activeHighlight === 'symptoms' 
+											? CATEGORY_COLORS.SECOND 
+											: `${CATEGORY_COLORS.SECOND}20`,
+										color: activeHighlight === 'symptoms' 
+											? 'white' 
+											: CATEGORY_COLORS.SECOND
+									}}
+								>
+									Symptoms
+								</button>
+								<button 
+									onClick={() => setActiveHighlight('treatment')}
+									className="px-3 py-1 rounded-full text-sm transition-all"
+									style={{
+										backgroundColor: activeHighlight === 'treatment' 
+											? CATEGORY_COLORS.THIRD 
+											: `${CATEGORY_COLORS.THIRD}20`,
+										color: activeHighlight === 'treatment' 
+											? 'white' 
+											: CATEGORY_COLORS.THIRD
+									}}
+								>
+									Treatment
+								</button>
+							</div>
+
+							{/* Instructions */}
+							<div className="mt-4 text-sm text-gray-500">
+								Click on text or categories to see how our AI highlighting works
+							</div>
+						</div>
+					</div>
+
 					{/* CTA buttons with enhanced styling */}
 					<div className="flex gap-6 justify-center">
 						<button 
@@ -73,21 +199,6 @@ export default function Homepage({ setCurrentPage }) {
 							</span>
 						))}
 					</div>
-				</div>
-
-				{/* Scroll indicator */}
-				<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-					<svg 
-						className="w-6 h-6 text-white"
-						fill="none" 
-						strokeLinecap="round" 
-						strokeLinejoin="round" 
-						strokeWidth="2" 
-						viewBox="0 0 24 24" 
-						stroke="currentColor"
-					>
-						<path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-					</svg>
 				</div>
 			</div>
 
@@ -212,5 +323,20 @@ const styles = `
 
 .animate-float-delayed {
     animation: float-delayed 7s ease-in-out infinite;
+}
+
+@keyframes highlight {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%) skewX(-12deg);
+    }
+    100% {
+        opacity: 0.2;
+        transform: translateX(100%) skewX(-12deg);
+    }
+}
+
+.animate-highlight {
+    animation: highlight 2s ease-in-out infinite;
 }
 `;
