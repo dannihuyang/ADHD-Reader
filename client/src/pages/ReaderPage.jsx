@@ -12,10 +12,7 @@ export default function ReaderPage() {
 	const [categories, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [selectedCategory, setSelectedCategory] = useState(null);
 	const [editingCategory, setEditingCategory] = useState(null);
-	const [highlights, setHighlights] = useState([]);
-	const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
 	const [visibleCategories, setVisibleCategories] = useState(new Set());
 	const [processingCategory, setProcessingCategory] = useState(null);
 
@@ -247,30 +244,6 @@ export default function ReaderPage() {
     }
 };
 
-const toggleCategoryVisibility = (categoryId) => {
-    const content = window.document.querySelector('#document-content');
-    if (!content) {
-        console.log("Content element not found");
-        return;
-    }
-
-    const newVisibleCategories = new Set(visibleCategories);
-    if (newVisibleCategories.has(categoryId)) {
-        newVisibleCategories.delete(categoryId);
-    } else {
-        newVisibleCategories.add(categoryId);
-    }
-    setVisibleCategories(newVisibleCategories);
-
-    const categoryHighlights = content.querySelectorAll(`.category-${categoryId}`);
-    categoryHighlights.forEach(highlight => {
-        if (newVisibleCategories.has(categoryId)) {
-            highlight.style.backgroundColor = highlight.dataset.color;
-        } else {
-            highlight.style.backgroundColor = 'transparent';
-        }
-    });
-};
 
 const applyHighlights = (highlights, color, categoryId) => {
     const content = window.document.getElementById('document-content');

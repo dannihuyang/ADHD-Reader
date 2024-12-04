@@ -41,7 +41,7 @@ export default function ItemListPage() {
 			})
 			.catch(() => setIsLoggedIn(false)) // if error, set isLoggedIn to false
 			.finally(() => setLoading(false));
-	}, []); // run once when component is mounted
+	}, []); 
 
 	const fetchDocuments = async () => {
 		try {
