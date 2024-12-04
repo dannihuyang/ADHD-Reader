@@ -24,3 +24,34 @@
     line-height: 1.6;
     text-align: justify;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    /* Mobile styles */
+    .prose {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    /* Adjust padding for better mobile reading */
+    .prose p {
+        margin: 1em 0;
+    }
+
+    /* Limit sidebar height on mobile */
+    .bg-gray-50 {
+        max-height: 40vh;
+    }
+}
+
+/* Ensure highlights work on all screen sizes */
+#document-content span[class^="category-"] {
+    display: inline;
+    padding: 0.1em 0;
+    border-radius: 0.1em;
+}
+
+/* Smooth transitions */
+.transition-sidebar {
+    transition: width 0.3s ease;
+}

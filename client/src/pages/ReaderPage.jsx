@@ -380,180 +380,176 @@ const applyHighlights = (highlights, color, categoryId) => {
 	</div>;
 
 	return (
-		<div className="h-screen flex flex-col bg-gray-50">
+		<div className="h-screen flex flex-col">
 			{/* Header */}
-			<header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-				<div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
-					<div className="flex items-center gap-6">
-						<button
-							onClick={() => navigate('/items')}
-							className="text-gray-600 hover:text-gray-800 p-2"
-						>
-							<ArrowLeft className="h-5 w-5" />
-						</button>
-						<h1 className="text-xl font-bold text-gray-900 pl-2">
-							{document?.title || "Untitled Document"}
-						</h1>
-					</div>
-				</div>
-			</header>
+			<div className="bg-white border-b p-4">
+				<button 
+					onClick={() => navigate('/items')} 
+					className="flex items-center text-gray-600 hover:text-gray-900"
+				>
+					<ArrowLeft className="w-5 h-5 mr-2" />
+					Back to Documents
+				</button>
+			</div>
 
-			<div className="flex flex-1 overflow-hidden">
-				{/* Left Sidebar */}
-				<div className="w-72 bg-white border-r border-gray-200 p-6 overflow-y-auto">
-					<h3 className="text-lg font-semibold mb-2">Categories</h3>
-					
-					{/* Categories list */}
-					<div className="space-y-3 mt-6">
-						{categories.map((category) => (
-							<div key={category.id} className="relative group">
-								{/* Main category button */}
-								<div
-									onClick={() => handleCategoryClick(category)}
-									className={`cursor-pointer rounded-lg p-4 transition-all relative
-										${visibleCategories.has(category.id) 
-											? 'ring-2 ring-offset-2 font-medium shadow-md transform scale-105'
-											: 'border-2 hover:shadow-sm hover:scale-[1.02] transition-transform'
-										}
-									`}
-									style={{
-										backgroundColor: visibleCategories.has(category.id) 
-											? `${category.color}30`
-											: `${category.color}10`,
-										borderColor: category.color,
-										'--tw-ring-color': category.color,
-										transform: visibleCategories.has(category.id) ? 'translateX(4px)' : 'none',
-										transition: 'all 0.2s ease-in-out'
-									}}
-								>
-									{/* Category content */}
-									<div className="flex items-center gap-3">
-										{/* Color dot with processing animation */}
-										<div className="relative">
-											<div 
-												className={`w-4 h-4 rounded-full flex-shrink-0 transition-transform
-													${visibleCategories.has(category.id) ? 'scale-110' : ''}
-													${processingCategory === category.id ? 'opacity-50' : ''}
-												`}
-												style={{ 
-													backgroundColor: category.color,
-													boxShadow: visibleCategories.has(category.id) 
-														? `0 0 0 2px white, 0 0 0 4px ${category.color}40` 
-														: 'none'
-												}}
-											/>
-											{/* Processing spinner overlay */}
-											{processingCategory === category.id && (
-												<div className="absolute inset-0 flex items-center justify-center">
-													<div 
-														className="w-6 h-6 border-2 border-transparent rounded-full animate-spin"
-														style={{ 
-															borderTopColor: category.color,
-															borderRightColor: category.color
-														}}
-													/>
-												</div>
-											)}
-										</div>
-
-										{/* Category name */}
-										<span className={`text-sm text-gray-900 transition-all
+			{/* Main content area with reversed order on mobile */}
+			<div className="flex flex-col-reverse md:flex-row flex-1 overflow-hidden">
+				{/* Sidebar - moves to bottom on mobile */}
+				<div className="w-full md:w-80 lg:w-96 border-t md:border-t-0 md:border-r bg-gray-50 overflow-y-auto">
+					<div className="p-4">
+						<h2 className="text-xl font-semibold mb-4">Categories</h2>
+						{/* Categories list */}
+						<div className="space-y-2">
+							{categories.map(category => (
+								<div key={category.id} className="relative group">
+									{/* Main category button */}
+									<div
+										onClick={() => handleCategoryClick(category)}
+										className={`cursor-pointer rounded-lg p-4 transition-all relative
 											${visibleCategories.has(category.id) 
-												? 'font-semibold transform translate-x-0.5' 
-												: 'font-normal'
+												? 'ring-2 ring-offset-2 font-medium shadow-md transform scale-105'
+												: 'border-2 hover:shadow-sm hover:scale-[1.02] transition-transform'
 											}
-											${processingCategory === category.id ? 'opacity-50' : ''}
-										`}>
-											{editingCategory === category.id ? (
-												<input
-													autoFocus
-													className="text-sm font-medium text-gray-900 bg-transparent border-none focus:ring-0 flex-1"
-													value={category.name}
-													onClick={(e) => e.stopPropagation()}
-													onChange={(e) => {
-														const newCategories = [...categories];
-														const index = newCategories.findIndex(c => c.id === category.id);
-														newCategories[index] = { ...category, name: e.target.value };
-														setCategories(newCategories);
-													}}
-													onBlur={() => {
-														if (category.name.trim()) {
-															handleCategoryNameUpdate(category.id, category.name);
-														}
-													}}
-													onKeyDown={(e) => {
-														if (e.key === 'Enter' && category.name.trim()) {
-															handleCategoryNameUpdate(category.id, category.name);
-														}
+										`}
+										style={{
+											backgroundColor: visibleCategories.has(category.id) 
+												? `${category.color}30`
+												: `${category.color}10`,
+											borderColor: category.color,
+											'--tw-ring-color': category.color,
+											transform: visibleCategories.has(category.id) ? 'translateX(4px)' : 'none',
+											transition: 'all 0.2s ease-in-out'
+										}}
+									>
+										{/* Category content */}
+										<div className="flex items-center gap-3">
+											{/* Color dot with processing animation */}
+											<div className="relative">
+												<div 
+													className={`w-4 h-4 rounded-full flex-shrink-0 transition-transform
+														${visibleCategories.has(category.id) ? 'scale-110' : ''}
+														${processingCategory === category.id ? 'opacity-50' : ''}
+													`}
+													style={{ 
+														backgroundColor: category.color,
+														boxShadow: visibleCategories.has(category.id) 
+															? `0 0 0 2px white, 0 0 0 4px ${category.color}40` 
+															: 'none'
 													}}
 												/>
-											) : (
-												category.name
-											)}
-										</span>
+												{/* Processing spinner overlay */}
+												{processingCategory === category.id && (
+													<div className="absolute inset-0 flex items-center justify-center">
+														<div 
+															className="w-6 h-6 border-2 border-transparent rounded-full animate-spin"
+															style={{ 
+																borderTopColor: category.color,
+																borderRightColor: category.color
+															}}
+														/>
+													</div>
+												)}
+											</div>
+
+											{/* Category name */}
+											<span className={`text-sm text-gray-900 transition-all
+												${visibleCategories.has(category.id) 
+													? 'font-semibold transform translate-x-0.5' 
+													: 'font-normal'
+												}
+												${processingCategory === category.id ? 'opacity-50' : ''}
+											`}>
+												{editingCategory === category.id ? (
+													<input
+														autoFocus
+														className="text-sm font-medium text-gray-900 bg-transparent border-none focus:ring-0 flex-1"
+														value={category.name}
+														onClick={(e) => e.stopPropagation()}
+														onChange={(e) => {
+															const newCategories = [...categories];
+															const index = newCategories.findIndex(c => c.id === category.id);
+															newCategories[index] = { ...category, name: e.target.value };
+															setCategories(newCategories);
+														}}
+														onBlur={() => {
+															if (category.name.trim()) {
+																handleCategoryNameUpdate(category.id, category.name);
+															}
+														}}
+														onKeyDown={(e) => {
+															if (e.key === 'Enter' && category.name.trim()) {
+																handleCategoryNameUpdate(category.id, category.name);
+															}
+														}}
+													/>
+												) : (
+													category.name
+												)}
+											</span>
+										</div>
+
+										{/* Active indicator */}
+										{visibleCategories.has(category.id) && (
+											<div 
+												className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-full"
+												style={{ backgroundColor: category.color }}
+											/>
+										)}
 									</div>
 
-									{/* Active indicator */}
-									{visibleCategories.has(category.id) && (
-										<div 
-											className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-full"
-											style={{ backgroundColor: category.color }}
-										/>
-									)}
-								</div>
-
-								{/* Action buttons container */}
-								<div className="absolute right-2 top-0 bottom-0 flex items-center gap-2">
-									{/* Edit button */}
-									{!processingCategory && (
-										<button
-											className="p-1.5 rounded-full bg-white shadow-sm hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200"
-											onClick={(e) => {
-												e.stopPropagation();
-												setEditingCategory(category.id);
-											}}
-											title="Edit category name"
-										>
-											<Edit2 className="h-4 w-4 text-gray-600" />
-										</button>
-									)}
-
-									{/* Color Palette */}
-									<div 
-										className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center"
-										onClick={(e) => e.stopPropagation()}
-									>
-										{Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+									{/* Action buttons container */}
+									<div className="absolute right-2 top-0 bottom-0 flex items-center gap-2">
+										{/* Edit button */}
+										{!processingCategory && (
 											<button
-												key={key}
+												className="p-1.5 rounded-full bg-white shadow-sm hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200"
 												onClick={(e) => {
 													e.stopPropagation();
-													updateCategory(category.id, color);
+													setEditingCategory(category.id);
 												}}
-												className="w-6 h-6 mx-0.5 rounded-full border-2 border-white hover:scale-110 transition-transform shadow-sm"
-												style={{ backgroundColor: color }}
-											/>
-										))}
+												title="Edit category name"
+											>
+												<Edit2 className="h-4 w-4 text-gray-600" />
+											</button>
+										)}
+
+										{/* Color Palette */}
+										<div 
+											className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center"
+											onClick={(e) => e.stopPropagation()}
+										>
+											{Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+												<button
+													key={key}
+													onClick={(e) => {
+														e.stopPropagation();
+														updateCategory(category.id, color);
+													}}
+													className="w-6 h-6 mx-0.5 rounded-full border-2 border-white hover:scale-110 transition-transform shadow-sm"
+													style={{ backgroundColor: color }}
+												/>
+											))}
+										</div>
 									</div>
 								</div>
-							</div>
-						))}
-					</div>
+							))}
+						</div>
 
-          {/* Instructions */}
-					<div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-						<h3 className="text-sm font-medium text-blue-900 mb-2">How to use</h3>
-						<ul className="text-sm text-blue-700 space-y-2">
-							<li>• Click on a category to highlight relevant text</li>
-							<li>• Hover on a category to select a new color</li>
-							<li>• Click the edit icon to change category name</li>
-						</ul>
+						{/* Instructions panel - hidden on mobile */}
+						<div className="hidden md:block mt-6 p-4 bg-blue-50 rounded-lg">
+							<h3 className="font-medium mb-2">How to use</h3>
+							<ul className="text-sm text-gray-600 space-y-2">
+								<li>• Click on a category to highlight relevant text</li>
+								<li>• Hover on a category to select a new color</li>
+								<li>• Click the edit icon to change category name</li>
+							</ul>
+						</div>
 					</div>
 				</div>
-          
-				{/* Main Content */}
+
+				{/* Main content */}
 				<div className="flex-1 overflow-auto bg-white">
-					<div className="max-w-3xl mx-auto px-8 py-12">
+					<div className="max-w-3xl mx-auto px-4 md:px-8 py-8">
 						<article className="prose prose-lg max-w-none">
 							{document?.content ? (
 								<div 
