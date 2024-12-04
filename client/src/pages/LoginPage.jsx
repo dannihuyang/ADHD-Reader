@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
-export default function LoginPage({ setCurrentPage }) {
+export default function LoginPage() {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -18,7 +20,7 @@ export default function LoginPage({ setCurrentPage }) {
 
 			if (response.ok) {
 				const user = await response.json();
-				setCurrentPage("items"); // Navigate back to HomePage
+				navigate('/items');
 			} else {
 				const data = await response.json();
 				setError(data.error || "Login failed");
@@ -35,7 +37,7 @@ export default function LoginPage({ setCurrentPage }) {
 			method: "POST",
 			credentials: "include",
 		});
-		setCurrentPage("home");
+		navigate('/home');
 	};
 
 	return (
@@ -98,10 +100,10 @@ export default function LoginPage({ setCurrentPage }) {
 				</form>
 				<div className="text-center mt-4">
 					<button
-						onClick={() => setCurrentPage("home")}
+						onClick={() => navigate('/register')}
 						className="text-gray-500 hover:underline"
 					>
-						Back to Home
+						Register
 					</button>
 				</div>
 			</div>

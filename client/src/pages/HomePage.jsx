@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { CATEGORY_COLORS } from '../config/constants';
+import { useNavigate } from 'react-router-dom';
 
-export default function Homepage({ setCurrentPage }) {
+export default function Homepage() {
+	const navigate = useNavigate();
+
 	// Add some sample documents/previews
 	const sampleDocuments = [
 		{
@@ -170,7 +173,7 @@ export default function Homepage({ setCurrentPage }) {
 					{/* CTA buttons with enhanced styling */}
 					<div className="flex gap-6 justify-center">
 						<button 
-							onClick={() => setCurrentPage("login")} 
+							onClick={() => navigate('/login')} 
 							className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold 
 									hover:bg-blue-50 transform hover:scale-105 transition-all
 									shadow-lg hover:shadow-xl"
@@ -178,7 +181,7 @@ export default function Homepage({ setCurrentPage }) {
 							Login
 						</button>
 						<button 
-							onClick={() => setCurrentPage("register")} 
+							onClick={() => navigate('/register')} 
 							className="px-8 py-4 bg-transparent text-white border-2 border-white 
 									rounded-xl font-semibold hover:bg-white/10 
 									transform hover:scale-105 transition-all"
@@ -243,7 +246,7 @@ export default function Homepage({ setCurrentPage }) {
 								<div className="flex justify-between items-center">
 									<span className="text-sm text-gray-500">{doc.readTime}</span>
 									<button 
-										onClick={() => setCurrentPage("login")}
+										onClick={() => navigate('/login')}
 										className="text-blue-600 hover:text-blue-800"
 									>
 										Login to read more →

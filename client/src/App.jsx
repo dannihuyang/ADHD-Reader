@@ -1,31 +1,23 @@
-import { useState } from "react";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ReaderPage from "./pages/ReaderPage";
-import ItemListPage from "./pages/ItemListPage";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ItemListPage from './pages/ItemListPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ReaderPage from './pages/ReaderPage';
 
 function App() {
-	const [currentPage, setCurrentPage] = useState("home");
-
-	const renderPage = () => {
-		switch (currentPage) {
-			case "home":
-				return <HomePage setCurrentPage={setCurrentPage} />;
-			case "items":
-				return <ItemListPage setCurrentPage={setCurrentPage} />;
-			case "login":
-				return <LoginPage setCurrentPage={setCurrentPage} />;
-			case "register":
-				return <RegisterPage setCurrentPage={setCurrentPage} />;
-			case "reader":
-				return <ReaderPage setCurrentPage={setCurrentPage} />;
-			default:
-				return <ItemListPage setCurrentPage={setCurrentPage} />;
-		}
-	};
-
-	return <div>{renderPage()}</div>;
+	return (
+		<Router>
+			<Routes>
+				<Route path="/" element={<HomePage />} />
+				<Route path="/items" element={<ItemListPage />} />
+				<Route path="/login" element={<LoginPage />} />
+				<Route path="/register" element={<RegisterPage />} />
+				<Route path="/reader/:documentId" element={<ReaderPage />} />
+				<Route path="*" element={<Navigate to="/items" replace />} />
+			</Routes>
+		</Router>
+	);
 }
 
 export default App;

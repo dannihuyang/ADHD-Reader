@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
-export default function RegisterPage({ setCurrentPage }) {
+export default function RegisterPage() {
+	const navigate = useNavigate();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -27,7 +29,7 @@ export default function RegisterPage({ setCurrentPage }) {
 			if (response.ok) {
 				setSuccess("Registration successful! Redirecting to login...");
 				setError("");
-				setTimeout(() => setCurrentPage("login"), 2000);
+				navigate('/login');
 			} else {
 				const data = await response.json();
 				setError(data.error || "Registration failed");
@@ -136,7 +138,7 @@ export default function RegisterPage({ setCurrentPage }) {
 				<p className="text-center text-gray-600 mt-4">
 					Already have an account?{" "}
 					<button
-						onClick={() => setCurrentPage("login")}
+						onClick={() => navigate('/login')}
 						className="text-green-600 hover:underline"
 					>
 						Login
@@ -144,7 +146,7 @@ export default function RegisterPage({ setCurrentPage }) {
 				</p>
 				<p className="text-center text-gray-600 mt-2">
 					<button
-						onClick={() => setCurrentPage("home")}
+						onClick={() => navigate('/home')}
 						className="text-gray-500 hover:underline"
 					>
 						Back to Homepage

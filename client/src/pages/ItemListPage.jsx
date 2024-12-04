@@ -9,8 +9,10 @@ import {
 	Clock,
 } from "lucide-react";
 import { CATEGORY_COLORS } from "../config/constants";
+import { useNavigate } from 'react-router-dom';
 
-export default function ItemListPage({ setCurrentPage }) {
+export default function ItemListPage() {
+	const navigate = useNavigate();
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -95,7 +97,7 @@ export default function ItemListPage({ setCurrentPage }) {
 		});
 		setIsLoggedIn(false);
 		setUser(null);
-		setCurrentPage("home");
+		navigate('/');
 	};
 
 	const handleDeleteDocument = async (id, e) => {
@@ -124,6 +126,10 @@ export default function ItemListPage({ setCurrentPage }) {
 		}
 	};
 
+	const handleDocumentClick = (documentId) => {
+		navigate(`/reader/${documentId}`);
+	};
+
 	if (loading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
@@ -142,13 +148,13 @@ export default function ItemListPage({ setCurrentPage }) {
 					</p>
 					<div className="flex gap-4">
 						<button
-							onClick={() => setCurrentPage("login")}
+							onClick={() => navigate('/login')}
 							className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
 						>
 							Login
 						</button>
 						<button
-							onClick={() => setCurrentPage("register")}
+							onClick={() => navigate('/register')}
 							className="flex-1 bg-gray-100 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
 						>
 							Register
@@ -222,10 +228,7 @@ export default function ItemListPage({ setCurrentPage }) {
 									{new Date(doc.createdAt).toLocaleDateString()}
 								</div>
 								<button
-									onClick={() => {
-										localStorage.setItem("currentDocumentId", doc.id);
-										setCurrentPage("reader");
-									}}
+									onClick={() => handleDocumentClick(doc.id)}
 									className="flex items-center gap-1.5 text-white px-3 py-1.5 rounded-lg btn-gradient text-sm"
 								>
 									<BookOpen size={16} />

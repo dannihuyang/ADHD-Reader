@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Edit2 } from 'lucide-react';
 import { CATEGORY_COLORS } from '../config/constants';
 import '../styles/ReaderPage.css';
+import { useNavigate, useParams } from 'react-router-dom';
 
-export default function ReaderPage({ setCurrentPage }) {
-  const contentRef = useRef(null);
+export default function ReaderPage() {
+	const navigate = useNavigate();
+	const { documentId } = useParams(); // Get documentId from URL
+	const contentRef = useRef(null);
 	const [document, setDocument] = useState(null);
 	const [categories, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -17,14 +20,8 @@ export default function ReaderPage({ setCurrentPage }) {
 	const [processingCategory, setProcessingCategory] = useState(null);
 
 	useEffect(() => {
-		const documentId = localStorage.getItem("currentDocumentId");
-		if (documentId) {
-			fetchDocumentAndCategories(documentId);
-		} else {
-			setError("No document selected");
-			setLoading(false);
-		}
-	}, []);
+		fetchDocumentAndCategories(documentId);
+	}, [documentId]);
 
 	const fetchDocumentAndCategories = async (documentId) => {
 		try {
@@ -377,7 +374,7 @@ const applyHighlights = (highlights, color, categoryId) => {
 
 	if (error) return <div className="min-h-screen flex flex-col items-center justify-center">
 		<div className="text-red-600 mb-4">Error: {error}</div>
-		<button onClick={() => setCurrentPage("items")} className="text-blue-600 hover:text-blue-800">
+		<button onClick={() => navigate('/items')} className="text-blue-600 hover:text-blue-800">
 			← Back to Documents
 		</button>
 	</div>;
@@ -389,7 +386,7 @@ const applyHighlights = (highlights, color, categoryId) => {
 				<div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
 					<div className="flex items-center gap-6">
 						<button
-							onClick={() => setCurrentPage("items")}
+							onClick={() => navigate('/items')}
 							className="text-gray-600 hover:text-gray-800 p-2"
 						>
 							<ArrowLeft className="h-5 w-5" />

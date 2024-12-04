@@ -6,6 +6,7 @@
 		"lucide-react": "^0.460.0",
 		"openai": "^4.73.0",
 		"react-feather": "^2.0.10",
+		"react-router-dom": "^7.0.2",
 		"tailwind-merge": "^2.5.4",
 		"tailwindcss-animate": "^1.0.7"
 	},
