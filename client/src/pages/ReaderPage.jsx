@@ -98,7 +98,6 @@ export default function ReaderPage() {
 	};
 
 	const handleCategoryNameUpdate = async (categoryId, newName) => {
-		console.log("Updating category:", categoryId, "to:", newName);
 		setProcessingCategory(categoryId);
 
 		try {
@@ -173,13 +172,11 @@ export default function ReaderPage() {
 	};
 
   const handleCategoryClick = async (category) => {
-    console.log("Category clicked:", category.name);
     
     const content = window.document.getElementById('document-content');
     if (!content) return;
 
     const existingHighlights = content.querySelectorAll(`.category-${category.id}`);
-    console.log("Existing highlights:", existingHighlights.length);
 
     if (existingHighlights.length > 0) {
         const isCurrentlyVisible = visibleCategories.has(category.id);
@@ -234,7 +231,6 @@ export default function ReaderPage() {
         );
         
         const data = await response.json();
-        console.log("Received highlights:", data.highlights.length);
 
         if (data.highlights && Array.isArray(data.highlights)) {
             applyHighlights(data.highlights, category.color, category.id);

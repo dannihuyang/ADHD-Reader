@@ -121,7 +121,7 @@ export default function ItemListPage() {
 				throw new Error(responseData.error || "Failed to delete document");
 			}
 		} catch (error) {
-			console.error("Full error:", error);
+			console.error("Error deleting document:", error);
 			alert(`Failed to delete document: ${error.message}`);
 		}
 	};

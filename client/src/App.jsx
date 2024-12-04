@@ -21,3 +21,5 @@ function App() {
 }
 
 export default App;
+
+// app's main layout
