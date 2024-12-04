@@ -29,6 +29,7 @@ ADHD Reader is an innovative web application designed to enhance reading accessi
 - 📚 **Document Management**: Comprehensive system for managing reading materials
 - 🔐 **Secure Authentication**: User authentication and data protection
 - 💡 **Interactive Demo**: Homepage demonstration of key features
+- 📱 **Responsive Design**: Adapts seamlessly to desktops, tablets, and phones
 
 ## Technical Architecture
 ### Frontend
