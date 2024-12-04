@@ -26,36 +26,56 @@ router.get("/:documentId", requireAuth, async (req, res) => {
     }
 });
 
-// Update a category (name/color only)
-router.put("/:id", requireAuth, async (req, res) => {
+// Update category
+router.put("/:categoryId", requireAuth, async (req, res) => {
+    const { categoryId } = req.params;
     const { name, color } = req.body;
 
-    // Validate color
-    const allowedColors = Object.values(CATEGORY_COLORS);
-    if (color && !allowedColors.includes(color)) {
-        return res.status(400).json({ 
-            error: "Invalid color",
-            details: `Color must be one of: ${allowedColors.join(', ')}`
-        });
-    }
     try {
-        const category = await prisma.category.update({
+        // First check if the name already exists for this document
+        const existingCategory = await prisma.category.findFirst({
             where: {
-                id: req.params.id,
+                id: categoryId,
                 document: {
-                    userId: req.user.id  // Verify ownership through document
+                    userId: req.user.id
                 }
             },
-            data: {
-                name,
-                color
+            include: {
+                document: true
             }
         });
+
+        if (!existingCategory) {
+            return res.status(404).json({ error: "Category not found" });
+        }
+
+        // Check for duplicate name in the same document
+        const duplicateCategory = await prisma.category.findFirst({
+            where: {
+                documentId: existingCategory.documentId,
+                name: name,
+                id: { not: categoryId } // Exclude current category
+            }
+        });
+
+        if (duplicateCategory) {
+            return res.status(400).json({
+                error: "Category name already exists in this document",
+                details: "Please choose a different name"
+            });
+        }
+
+        // If no duplicate, proceed with update
+        const category = await prisma.category.update({
+            where: { id: categoryId },
+            data: { name, color }
+        });
+
         res.json(category);
     } catch (error) {
-        console.error("Error details:", error);
+        console.error("Error updating category:", error);
         res.status(400).json({ 
-            error: "Error updating category",
+            error: "Failed to update category",
             details: error.message 
         });
     }

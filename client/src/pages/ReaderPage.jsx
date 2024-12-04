@@ -143,21 +143,28 @@ export default function ReaderPage({ setCurrentPage }) {
 			if (!highlightsResponse.ok) throw new Error('Failed to generate new highlights');
 			const data = await highlightsResponse.json();
 
-			// Remove old highlights
+			// Safely remove old highlights while preserving text
 			const content = window.document.getElementById('document-content');
 			if (content) {
 				const oldHighlights = content.querySelectorAll(`.category-${categoryId}`);
-				oldHighlights.forEach(highlight => highlight.remove());
-			}
+				oldHighlights.forEach(highlight => {
+					// Create a text node with the highlight's content
+					const textNode = window.document.createTextNode(highlight.textContent);
+					// Insert the text node before the highlight
+					highlight.parentNode.insertBefore(textNode, highlight);
+					// Then remove the highlight span
+					highlight.parentNode.removeChild(highlight);
+				});
 
-			// Apply new highlights
-			if (data.highlights && Array.isArray(data.highlights)) {
-				applyHighlights(data.highlights, updatedCategory.color, categoryId);
-				
-				// Make sure the category is visible
-				const newVisibleCategories = new Set(visibleCategories);
-				newVisibleCategories.add(categoryId);
-				setVisibleCategories(newVisibleCategories);
+				// Apply new highlights after removing old ones
+				if (data.highlights && Array.isArray(data.highlights)) {
+					applyHighlights(data.highlights, updatedCategory.color, categoryId);
+					
+					// Make sure the category is visible
+					const newVisibleCategories = new Set(visibleCategories);
+					newVisibleCategories.add(categoryId);
+					setVisibleCategories(newVisibleCategories);
+				}
 			}
 
 		} catch (error) {
