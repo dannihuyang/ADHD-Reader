@@ -63,12 +63,13 @@ cd api
 npm install
 
 # Configure environment
-cp .env.example .env
+Update `.env` with your settings:
 
 # Update .env with your settings:
 DATABASE_URL="postgresql://username:password@localhost:5432/adhd_reader"
 JWT_SECRET="your-secret-key"
 PORT=3001
+- ** copy the openai api key from .env // temporary for development
 
 # Run database migrations
 npx prisma migrate dev
@@ -82,8 +83,7 @@ cd ../client
 # Install dependencies
 npm install
 
-# Configure environment
-cp .env.example .env
+# Check Configure environment
 
 # Update .env with:
 VITE_API_URL="http://localhost:3001"
@@ -104,12 +104,7 @@ VITE_API_URL="http://localhost:3001"
    npm run dev
    ```
 
-### Testing
-Run API tests:
-```bash
-cd api
-npm test
-```
+
 
 #### Manual Testing Checklist
 1. Register a new account
