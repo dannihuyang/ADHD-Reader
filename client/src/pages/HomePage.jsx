@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { CATEGORY_COLORS } from '../config/constants';
 import { useNavigate } from 'react-router-dom';
+import { FaBook, FaBrain, FaHighlighter } from 'react-icons/fa';
+
+// Helper function to format highlighted text
+const formatHighlightedText = (text) => {
+	if (!text) return '';
+	return text.charAt(0).toUpperCase() + text.slice(1);
+};
 
 export default function Homepage() {
 	const navigate = useNavigate();
 
-	// Add some sample documents/previews
-	const sampleDocuments = [
-		{
-			title: "Understanding ADHD",
-			excerpt: "ADHD affects millions worldwide. Learn about common symptoms and coping strategies...",
-			readTime: "5 min read",
-			category: "Health"
-		},
-		{
-			title: "Study Techniques",
-			excerpt: "Effective study methods for students with attention difficulties...",
-			readTime: "3 min read",
-			category: "Education"
-		}
-	];
-
-	// Add this state at the top of your component
+	// State to track the active highlight category
 	const [activeHighlight, setActiveHighlight] = useState(null);
+
+	// Function to toggle the highlight
+	const toggleHighlight = (category) => {
+		if (activeHighlight === category) {
+			setActiveHighlight(null); // Turn off if clicking the active category
+		} else {
+			setActiveHighlight(category); // Turn on if clicking a new category
+		}
+	};
 
 	return (
 		<div className="min-h-screen flex flex-col bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
-			{/* Enhanced Hero Section */}
+			{/* Hero Section */}
 			<div className="min-h-[80vh] relative flex flex-col items-center justify-center p-8">
 				{/* Animated background grid */}
 				<div className="absolute inset-0 bg-grid-white/[0.05] pointer-events-none" />
@@ -43,7 +43,7 @@ export default function Homepage() {
 						Focus Better with ADHD Reader
 					</h1>
 					
-					{/* Enhanced subheading */}
+					{/* Subheading */}
 					<div className="max-w-3xl mx-auto mb-12">
 						<p className="text-2xl text-white/90 mb-8 leading-relaxed">
 							Transform your reading experience with AI-powered highlighting
@@ -62,15 +62,20 @@ export default function Homepage() {
 							<div className="prose prose-lg max-w-none">
 								<p className="mb-4">
 									<span 
-										className="relative cursor-pointer group"
-										onClick={() => setActiveHighlight('research')}
+										className="relative cursor-pointer group transition-all duration-200"
 										style={{
 											backgroundColor: activeHighlight === 'research' 
 												? `${CATEGORY_COLORS.FIRST}30` 
-												: 'transparent'
+												: 'transparent',
+											fontSize: activeHighlight === 'research' ? '1.1em' : '1em'
 										}}
+										onClick={() => toggleHighlight('research')}
 									>
-										Recent research suggests that ADHD affects approximately 5% of adults worldwide.
+										{activeHighlight === 'research' ? (
+											<><span className="font-bold">R</span>ecent</>
+										) : (
+											'Recent'
+										)} research suggests that ADHD affects approximately 5% of adults worldwide.
 										{activeHighlight === 'research' && (
 											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
 												  style={{ backgroundColor: CATEGORY_COLORS.FIRST }}>
@@ -80,15 +85,20 @@ export default function Homepage() {
 									</span>
 									{' '}
 									<span 
-										className="relative cursor-pointer group"
-										onClick={() => setActiveHighlight('symptoms')}
+										className="relative cursor-pointer group transition-all duration-200"
 										style={{
 											backgroundColor: activeHighlight === 'symptoms' 
 												? `${CATEGORY_COLORS.SECOND}30` 
-												: 'transparent'
+												: 'transparent',
+											fontSize: activeHighlight === 'symptoms' ? '1.1em' : '1em'
 										}}
+										onClick={() => toggleHighlight('symptoms')}
 									>
-										Common symptoms include difficulty maintaining focus, hyperactivity, and impulsive behavior.
+										{activeHighlight === 'symptoms' ? (
+											<><span className="font-bold">C</span>ommon</>
+										) : (
+											'Common'
+										)} symptoms include difficulty maintaining focus, hyperactivity, and impulsive behavior.
 										{activeHighlight === 'symptoms' && (
 											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
 												  style={{ backgroundColor: CATEGORY_COLORS.SECOND }}>
@@ -98,15 +108,20 @@ export default function Homepage() {
 									</span>
 									{' '}
 									<span 
-										className="relative cursor-pointer group"
-										onClick={() => setActiveHighlight('treatment')}
+										className="relative cursor-pointer group transition-all duration-200"
 										style={{
 											backgroundColor: activeHighlight === 'treatment' 
 												? `${CATEGORY_COLORS.THIRD}30` 
-												: 'transparent'
+												: 'transparent',
+											fontSize: activeHighlight === 'treatment' ? '1.1em' : '1em'
 										}}
+										onClick={() => toggleHighlight('treatment')}
 									>
-										Treatment options often include a combination of medication, therapy, and lifestyle adjustments.
+										{activeHighlight === 'treatment' ? (
+											<><span className="font-bold">T</span>reatment</>
+										) : (
+											'Treatment'
+										)} options often include a combination of medication, therapy, and lifestyle adjustments.
 										{activeHighlight === 'treatment' && (
 											<span className="absolute -top-12 left-0 text-white px-3 py-1 rounded text-sm"
 												  style={{ backgroundColor: CATEGORY_COLORS.THIRD }}>
@@ -120,7 +135,7 @@ export default function Homepage() {
 							{/* Category Pills */}
 							<div className="flex gap-2 mb-6">
 								<button 
-									onClick={() => setActiveHighlight('research')}
+									onClick={() => toggleHighlight('research')}
 									className="px-3 py-1.5 rounded-full text-sm transition-all hover:shadow-sm"
 									style={{
 										backgroundColor: activeHighlight === 'research' 
@@ -134,7 +149,7 @@ export default function Homepage() {
 									Research Data
 								</button>
 								<button 
-									onClick={() => setActiveHighlight('symptoms')}
+									onClick={() => toggleHighlight('symptoms')}
 									className="px-3 py-1 rounded-full text-sm transition-all"
 									style={{
 										backgroundColor: activeHighlight === 'symptoms' 
@@ -148,7 +163,7 @@ export default function Homepage() {
 									Symptoms
 								</button>
 								<button 
-									onClick={() => setActiveHighlight('treatment')}
+									onClick={() => toggleHighlight('treatment')}
 									className="px-3 py-1 rounded-full text-sm transition-all"
 									style={{
 										backgroundColor: activeHighlight === 'treatment' 
@@ -170,7 +185,7 @@ export default function Homepage() {
 						</div>
 					</div>
 
-					{/* CTA buttons with enhanced styling */}
+					{/* CTA buttons with styling */}
 					<div className="flex gap-6 justify-center">
 						<button 
 							onClick={() => navigate('/login')} 
@@ -211,52 +226,26 @@ export default function Homepage() {
 					<h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
 					<div className="grid md:grid-cols-3 gap-8">
 						<FeatureCard 
-							icon="📚"
+							icon={FaBook}
 							title="Create Documents"
 							description="Paste any text that might be difficult to parse"
-						/>
+							/>
 						<FeatureCard 
-							icon="🎨"
+							icon={FaBrain}
 							title="Smart Categories"
 							description="Intelligent categories organize your content using AI analysis"
 						/>
 						<FeatureCard 
-							icon="✨"
+							icon={FaHighlighter}
 							title="Automatic Highlights"
 							description="Automatic highlights reveal key concepts through AI detection"
-						/>
+							/>
 					</div>
 				</div>
 			</div>
 
-			{/* Sample Documents Section */}
-			<div className="bg-gray-50 py-16">
-				<div className="max-w-6xl mx-auto px-8">
-					<h2 className="text-3xl font-bold text-center mb-12">Sample Documents</h2>
-					<div className="grid md:grid-cols-2 gap-8">
-						{sampleDocuments.map((doc, index) => (
-							<div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-								<div className="flex justify-between items-start mb-4">
-									<h3 className="text-xl font-semibold">{doc.title}</h3>
-									<span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-										{doc.category}
-									</span>
-								</div>
-								<p className="text-gray-600 mb-4">{doc.excerpt}</p>
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-500">{doc.readTime}</span>
-									<button 
-										onClick={() => navigate('/login')}
-										className="text-blue-600 hover:text-blue-800"
-									>
-										Login to read more →
-									</button>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</div>
+			{/* Separator */}
+			<div className="w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent h-px max-w-4xl mx-auto" />
 
 			{/* Testimonials Section */}
 			<div className="bg-white py-16">
@@ -286,12 +275,16 @@ export default function Homepage() {
 }
 
 // Helper Components
-function FeatureCard({ icon, title, description }) {
+function FeatureCard({ icon: Icon, title, description }) {
 	return (
-		<div className="text-center p-6">
-			<div className="text-4xl mb-4">{icon}</div>
-			<h3 className="text-xl font-semibold mb-2">{title}</h3>
-			<p className="text-gray-600">{description}</p>
+		<div className="flex flex-col items-center p-6">
+			<div className="mb-6 p-4 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white">
+				<Icon size={24} />
+			</div>
+			<div className="text-center">
+				<h3 className="text-xl font-semibold mb-2">{title}</h3>
+				<p className="text-gray-600">{description}</p>
+			</div>
 		</div>
 	);
 }
@@ -308,7 +301,6 @@ function TestimonialCard({ quote, author, role }) {
 	);
 }
 
-// Add these animations to your CSS file
 const styles = `
 @keyframes float {
     0%, 100% { transform: translateY(0); }
