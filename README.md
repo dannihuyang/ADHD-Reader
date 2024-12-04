@@ -25,6 +25,7 @@ ADHD Reader is an innovative web application designed to enhance reading accessi
   - ✅ **Dynamic Color System**: Highlights update instantly when category colors change
   - ✅ **Enhanced Text Styling**: First letter capitalization and bold styling for better readability
   - ✅ **Toggle Functionality**: Smooth transition between showing and hiding highlights
+  - ✅ **Category Management**: Edit category names to show different highlights according to user's needs and learning style
 - 📚 **Document Management**: Comprehensive system for managing reading materials
 - 🔐 **Secure Authentication**: User authentication and data protection
 - 💡 **Interactive Demo**: Homepage demonstration of key features
