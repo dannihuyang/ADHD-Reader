@@ -13,8 +13,8 @@ export default function ReaderPage({ setCurrentPage }) {
 	const [editingCategory, setEditingCategory] = useState(null);
 	const [highlights, setHighlights] = useState([]);
 	const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
-  const [visibleCategories, setVisibleCategories] = useState(new Set());
-  const [processingCategory, setProcessingCategory] = useState(null);
+	const [visibleCategories, setVisibleCategories] = useState(new Set());
+	const [processingCategory, setProcessingCategory] = useState(null);
 
 	useEffect(() => {
 		const documentId = localStorage.getItem("currentDocumentId");
@@ -81,6 +81,20 @@ export default function ReaderPage({ setCurrentPage }) {
 					cat.id === categoryId ? updatedCategory : cat
 				)
 			);
+
+			// Update existing highlights with new color
+			const content = window.document.getElementById('document-content');
+			if (content) {
+				const existingHighlights = content.querySelectorAll(`.category-${categoryId}`);
+				existingHighlights.forEach(highlight => {
+					// Update the stored color in dataset
+					highlight.dataset.color = `${newColor}40`;
+					// If the category is currently visible, update the displayed color
+					if (visibleCategories.has(categoryId)) {
+						highlight.style.backgroundColor = `${newColor}40`;
+					}
+				});
+			}
 		} catch (error) {
 			console.error('Error updating category:', error);
 		}
@@ -178,17 +192,31 @@ export default function ReaderPage({ setCurrentPage }) {
         // Toggle all visual enhancements
         existingHighlights.forEach(highlight => {
             if (isCurrentlyVisible) {
-                // Hide highlight
+                // Hide highlight and reset all styling
                 highlight.style.backgroundColor = 'transparent';
-                highlight.style.fontSize = 'inherit';  // Reset font size
+                highlight.style.fontSize = 'inherit';
+                // Reset first character styling
+                const firstCharSpan = highlight.querySelector('span');
+                if (firstCharSpan) {
+                    firstCharSpan.style.fontWeight = 'normal';
+                    firstCharSpan.style.textTransform = 'none';
+                    firstCharSpan.style.fontSize = 'inherit';
+                }
             } else {
-                // Show highlight
+                // Show highlight and apply styling
                 highlight.style.backgroundColor = highlight.dataset.color;
-                highlight.style.fontSize = '1.1em';  // Restore larger font size
+                highlight.style.fontSize = '1.1em';
+                // Restore first character styling
+                const firstCharSpan = highlight.querySelector('span');
+                if (firstCharSpan) {
+                    firstCharSpan.style.fontWeight = 'bold';
+                    firstCharSpan.style.textTransform = 'uppercase';
+                    firstCharSpan.style.fontSize = '1.05em';
+                }
             }
         });
 
-        return; // Exit early, no need to generate new highlights
+        return;
     }
 
     setProcessingCategory(category.id);
