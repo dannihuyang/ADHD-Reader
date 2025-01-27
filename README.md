@@ -21,15 +21,35 @@ ADHD Reader is an innovative web application designed to enhance reading accessi
 
 ## Features
 - 🤖 **AI-Powered Analysis**: Utilizes GPT-4o-mini for text analysis and categorization
+
+  ![Create Document](./images/create_document.png)
+  *Creating new documents with smart categorization*
+
+  
+
 - 🎨 **Smart Highlighting**: Automatic highlighting of key concepts
+
+
+
+  ![Category Highlighting](./images/category%20highlighting.png)
   - ✅ **Dynamic Color System**: Highlights update instantly when category colors change
   - ✅ **Enhanced Text Styling**: First letter capitalization and bold styling for better readability
   - ✅ **Toggle Functionality**: Smooth transition between showing and hiding highlights
   - ✅ **Category Management**: Edit category names to show different highlights according to user's needs and learning style
+ ![Customized Highlighting](./images/customized%20highlighting.png)
+
 - 📚 **Document Management**: Comprehensive system for managing reading materials
+  ![Document List](./images/document_list.png)
+  *Document management interface*
+
+
 - 🔐 **Secure Authentication**: User authentication and data protection
 - 💡 **Interactive Demo**: Homepage demonstration of key features
+  ![Front Page](./images/frontpage.png)
+ 
+
 - 📱 **Responsive Design**: Adapts seamlessly to desktops, tablets, and phones
+
 
 ## Technical Architecture
 ### Frontend
